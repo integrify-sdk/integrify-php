@@ -1,6 +1,6 @@
 {
     "name": "integrify/monorepo",
-    "description": "Development workspace for the Integrify PHP packages. Not published — the packages under packages/* are published individually via subtree splits (see PUBLISHING.md).",
+    "description": "Development workspace for the Integrify PHP packages. Not published — the packages under packages/* are published individually via subtree splits.",
     "type": "project",
     "keywords": [
         "integrify",

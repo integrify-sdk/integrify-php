@@ -59,14 +59,14 @@ composer sync-packages
 Nothing else is wired by hand. `bin/packages.php` discovers packages from
 `packages/*/composer.json` and is the single source of truth:
 
-| Consumer                      | How it picks the package up                                                                                         |
-| :---------------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| Consumer | How it picks the package up |
+| :--- | :--- |
 | Root `composer.json` autoload | `composer sync-packages` rewrites it **and dumps the autoloader**; `composer check-packages` fails if either drifts |
-| `phpunit.xml.dist`            | `<directory>packages/*/tests</directory>` — PHPUnit resolves `*` itself                                             |
-| `phpstan.neon.dist`           | `paths: [packages, bin]` — the whole directory (PHPStan does **not** support `*` in `paths`)                        |
-| `publish.yml` split matrix    | `fromJSON` of `php bin/packages.php --json`                                                                         |
-| `publish.yml` tag filter      | `'*-[0-9]*'` — matches any `<package>-<version>`                                                                    |
-| `standalone.yml` matrix       | the same JSON                                                                                                       |
+| `phpunit.xml.dist` | `<directory>packages/*/tests</directory>` — PHPUnit resolves `*` itself |
+| `phpstan.neon.dist` | `paths: [packages, bin]` — the whole directory (PHPStan does **not** support `*` in `paths`) |
+| `publish.yml` split matrix | `fromJSON` of `php bin/packages.php --json` |
+| `publish.yml` tag filter | `'*-[0-9]*'` — matches any `<package>-<version>` |
+| `standalone.yml` matrix | the same JSON |
 
 The convention that makes discovery work — all three must agree:
 
@@ -91,7 +91,8 @@ package's own manifest:
 install of anything depending on core cannot resolve without real ones.
 
 The one manual step that remains is outside the repo: **create the mirror repository**
-`integrify-<name>-php` on GitHub and submit it to Packagist once. See `PUBLISHING.md`.
+`integrify-<name>-php` on GitHub **with a README** and submit it to Packagist once.
+The setup notes live in the header comment of `.github/workflows/publish.yml`.
 
 ## Commands
 
@@ -237,13 +238,13 @@ Two guards, and neither is optional when adding a package:
 
 Everything the library throws implements `Integrify\Exception\IntegrifyException`:
 
-| Exception               | When                                                                               |
-| :---------------------- | :--------------------------------------------------------------------------------- |
-| `ValidationFailed`      | DTO validation failed; nothing was sent                                            |
-| `InvalidRequest`        | The request could not be built: unencoded path, unfilled placeholder, foreign host |
-| `RequestFailed`         | Network failure, or HTTP >= 400 — carries `->request` and `->response`             |
-| `MissingConfiguration`  | A required environment variable is absent                                          |
-| `<Package>\Exception\*` | Domain failures, e.g. `OperationFailed`                                            |
+| Exception | When |
+| :--- | :--- |
+| `ValidationFailed` | DTO validation failed; nothing was sent |
+| `InvalidRequest` | The request could not be built: unencoded path, unfilled placeholder, foreign host |
+| `RequestFailed` | Network failure, or HTTP >= 400 — carries `->request` and `->response` |
+| `MissingConfiguration` | A required environment variable is absent |
+| `<Package>\Exception\*` | Domain failures, e.g. `OperationFailed` |
 
 Because methods return concrete types, failure cannot be signalled through the return
 value — HTTP-level problems throw. Service-level failures that arrive with HTTP 200 are
@@ -293,7 +294,8 @@ nothing that is not an `IntegrifyException` escapes the library.
 
 ## Releasing
 
-**Full procedure and one-time setup: [`PUBLISHING.md`](PUBLISHING.md).** Summary:
+**Full procedure and one-time setup: the header comment of
+[`.github/workflows/publish.yml`](.github/workflows/publish.yml).** Summary:
 
 Packagist reads one `composer.json` per repository, from the repo root, and takes the
 version from the Git tag. So (a) `composer.json` must carry **no** `version` field, and
@@ -310,7 +312,7 @@ changelog does not mention, which is this repo's stand-in for Python's "tag matc
 
 Everything is pre-1.0, and Composer's caret treats a `0.x` **minor** as the breaking
 position (`^0.1` is `>=0.1.0 <0.2.0`). Adding a method therefore still forces consumers
-to widen their constraint. `PUBLISHING.md` has the table and the two ways out.
+to widen their constraint.
 
 Changing `packages/core` means a core release plus a dependency floor bump in any package
 that relies on the new behaviour.

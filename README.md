@@ -95,7 +95,8 @@ composer require guzzlehttp/guzzle nyholm/psr7
 > Paketlər hələ `0.x`-dədir. Composer-in `^` operatoru sıfırdan fərqli **ən soldakı**
 > rəqəmi qoruduğu üçün `^0.1` = `>=0.1.0 <0.2.0` deməkdir — yəni yalnız patch
 > yeniləmələri. API sabitləşənə qədər `0.2.0` kimi minor release-lər constraint-i
-> genişləndirməyi tələb edəcək. Detallar: [`PUBLISHING.md`](PUBLISHING.md).
+> genişləndirməyi tələb edəcək. Detallar:
+> [`.github/workflows/publish.yml`](.github/workflows/publish.yml).
 
 ### İstifadəsi
 
@@ -244,7 +245,7 @@ fallback cavab verin: `new RecordingTransport(Response::json([]))`.
 ✅ = publish olunub · ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) = planlaşdırılır
 
 Yeni paket əlavə etmək üçün [`CLAUDE.md`](CLAUDE.md), publish prosesi üçün
-[`PUBLISHING.md`](PUBLISHING.md) faylına baxın.
+[`.github/workflows/publish.yml`](.github/workflows/publish.yml) faylına baxın.
 
 ---
 
@@ -268,7 +269,6 @@ DTOs, constructor injection, exceptions. Where the two disagree on shape, PHP id
 | Document                                             | Purpose                                                            |
 | :--------------------------------------------------- | :----------------------------------------------------------------- |
 | [`PHP-PRIMER.md`](PHP-PRIMER.md)                     | This codebase explained for developers who know Python but not PHP |
-| [`PUBLISHING.md`](PUBLISHING.md)                     | How releases reach Packagist, and the one-time setup               |
 | [`CLAUDE.md`](CLAUDE.md)                             | Internal conventions                                               |
 | [`packages/core/README.md`](packages/core/README.md) | The core package in detail                                         |
 
@@ -301,8 +301,7 @@ composer require guzzlehttp/guzzle nyholm/psr7   # if you have no PSR-18 client 
 > [!IMPORTANT]
 > The packages are still `0.x`. Composer's caret preserves the left-most non-zero digit,
 > so `^0.1` means `>=0.1.0 <0.2.0` — patch updates only. Until the API settles, a minor
-> release such as `0.2.0` will require consumers to widen their constraint. See
-> [`PUBLISHING.md`](PUBLISHING.md).
+> release such as `0.2.0` will require consumers to widen their constraint.
 
 ### Usage
 

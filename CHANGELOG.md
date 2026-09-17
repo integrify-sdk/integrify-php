@@ -17,7 +17,6 @@ independently; this file records repository-wide changes.
   PHP 8.2 / 8.3 / 8.4.
 - Tag-driven publishing (`.github/workflows/publish.yml`): `<package>-<version>`
   subtree-splits `packages/*` into read-only mirror repositories that Packagist watches.
-  See [`PUBLISHING.md`](PUBLISHING.md).
 - `.github/workflows/standalone.yml` — installs each package **alone**, with only its own
   `composer.json` filling `vendor/`, and runs its tests against that autoloader. The
   monorepo's shared root autoloader otherwise hides a package using a class it never

@@ -41,9 +41,19 @@ name: Publish
 # Note the tag is renamed on the way out: the mirror gets `0.1.0`, not `lsim-0.1.0`,
 # because Packagist parses the mirror's tag as the version number.
 #
-# SETUP: see PUBLISHING.md. In short you need one mirror repository per package and a
-# repo secret `SPLIT_TOKEN` carrying `Contents: Read and write` on the mirrors only —
-# the default GITHUB_TOKEN cannot push to another repository.
+# SETUP, once per package:
+#
+#   1. Create the mirror repo under `integrify-sdk`, and TICK "Add a README file".
+#      It must not be a zero-commit repo: the action runs `git checkout main`, then on
+#      failure `git checkout -b main` and straight away `git push origin main` — on an
+#      unborn branch there is nothing for `main` to point at, so the push dies with
+#      `error: src refspec main does not match any`. Any one commit is enough; the
+#      split replaces the whole working tree on the first run anyway.
+#   2. Submit the mirror to packagist.org once.
+#
+# And once for the whole repo: a secret `SPLIT_TOKEN` with `Contents: Read and write`
+# on the mirrors only. The default GITHUB_TOKEN cannot push to another repository,
+# whatever you put in `permissions:`.
 
 on:
   push:
