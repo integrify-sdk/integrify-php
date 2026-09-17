@@ -11,7 +11,7 @@ declare(strict_types=1);
  *
  * Konvensiya (hər üçü uyğun olmalıdır):
  *
- *     packages/lsim/  ->  integrify/lsim  ->  integrify-sdk/integrify-php-lsim
+ *     packages/lsim/  ->  integrify/lsim  ->  integrify-sdk/integrify-lsim-php
  *
  * Mirror adını dəyişmək, və ya paketi publish-dən kənarda saxlamaq üçün paketin
  * `composer.json`-una:
@@ -28,7 +28,7 @@ declare(strict_types=1);
  */
 
 const VENDOR = 'integrify';
-const MIRROR_PREFIX = 'integrify-php-';
+const MIRROR_FORMAT = 'integrify-%s-php';
 
 $root = dirname(__DIR__);
 $mode = $argv[1] ?? '--table';
@@ -180,7 +180,7 @@ foreach ($directories as $path) {
     $packages[] = [
         'directory' => $directory,
         'package' => $name,
-        'mirror' => is_string($mirror) ? $mirror : MIRROR_PREFIX . $directory,
+        'mirror' => is_string($mirror) ? $mirror : sprintf(MIRROR_FORMAT, $directory),
         'publish' => $publish !== false,
     ];
 

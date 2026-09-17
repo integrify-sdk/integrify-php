@@ -12,7 +12,7 @@
   <br>
   <a href="https://www.gnu.org/licenses/mit.en.html"><img alt="License" src="https://img.shields.io/badge/license-MIT-16A34A"></a>
   <a href="https://phpstan.org/"><img alt="PHPStan" src="https://img.shields.io/badge/PHPStan-level%20max-2A2A2A"></a>
-  <a href="https://github.com/Integrify-SDK/integrify-php"><img alt="Monorepo" src="https://img.shields.io/badge/monorepo-integrations-0F766E"></a>
+  <a href="https://github.com/integrify-sdk/integrify-php"><img alt="Monorepo" src="https://img.shields.io/badge/monorepo-integrations-0F766E"></a>
 </p>
 <!-- markdownlint-enable MD033 -->
 
@@ -58,8 +58,8 @@ publish olunan inteqrasiya paketləri.
 ### Dokumentasiya
 
 - Dokumentasiya portalı: [https://integrify.mmzeynalli.dev](https://integrify.mmzeynalli.dev)
-- Kod bazası: [https://github.com/Integrify-SDK/integrify-php](https://github.com/Integrify-SDK/integrify-php)
-- Python versiyası: [https://github.com/Integrify-SDK/integrify-python](https://github.com/Integrify-SDK/integrify-python)
+- Kod bazası: [https://github.com/integrify-sdk/integrify-php](https://github.com/integrify-sdk/integrify-php)
+- Python versiyası: [https://github.com/integrify-sdk/integrify-python](https://github.com/integrify-sdk/integrify-python)
 
 ### Əsas özəlliklər
 
@@ -180,12 +180,12 @@ Python-dakı `ApiResponse.ok` burada `isSuccessful()`, `status_code` isə `statu
 Metodlar konkret tip qaytardığı üçün uğursuzluq qaytarış dəyəri ilə bildirilə bilmir —
 HTTP səviyyəsindəki xətalar exception kimi qalxır:
 
-| Exception | Nə vaxt |
-| :--- | :--- |
-| `ValidationFailed` | DTO-nun field-ləri qaydalara uyğun deyil (sorğu göndərilmir) |
-| `InvalidRequest` | Sorğu qurularkən klient kodundakı səhv: path-də kodlanmamış `?`/`#`, doldurulmamış `{placeholder}`, yad host |
-| `RequestFailed` | Şəbəkə xətası, və ya 400-dən böyük status kodu (`->request`, `->response` daşıyır) |
-| `MissingConfiguration` | Məcburi environment dəyişəni yoxdur |
+| Exception              | Nə vaxt                                                                                                      |
+| :--------------------- | :----------------------------------------------------------------------------------------------------------- |
+| `ValidationFailed`     | DTO-nun field-ləri qaydalara uyğun deyil (sorğu göndərilmir)                                                 |
+| `InvalidRequest`       | Sorğu qurularkən klient kodundakı səhv: path-də kodlanmamış `?`/`#`, doldurulmamış `{placeholder}`, yad host |
+| `RequestFailed`        | Şəbəkə xətası, və ya 400-dən böyük status kodu (`->request`, `->response` daşıyır)                           |
+| `MissingConfiguration` | Məcburi environment dəyişəni yoxdur                                                                          |
 
 Hamısı `IntegrifyException` interfeysini implement edir:
 
@@ -230,16 +230,16 @@ fallback cavab verin: `new RecordingTransport(Response::json([]))`.
 > Even though all requests are written according to official documentation, Integrify
 > is an unofficial library for these integrations.
 
-| Paket / Package | Composer | Status | Python qarşılığı |
-| :--- | :--- | :---: | :--- |
-| [`core`](packages/core) | `integrify/core` | ✅ | [`integrify-core`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/core) |
-| [`lsim`](packages/lsim) | `integrify/lsim` | ✅ | [`integrify-lsim`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/lsim) |
-| EPoint | `integrify/epoint` | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-epoint`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/epoint) |
-| KapitalBank | `integrify/kapitalbank` | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-kapitalbank`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/kapitalbank) |
-| Posta Güvercini | `integrify/postaguvercini` | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-postaguvercini`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/postaguvercini) |
-| Azericard | `integrify/azericard` | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-azericard`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/azericard) |
-| Clopos | `integrify/clopos` | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-clopos`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/clopos) |
-| ECustoms (məxfi) | — | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-ecustoms`](https://github.com/Integrify-SDK/integrify-ecustoms) |
+| Paket / Package         | Composer                   |                                                     Status                                                      | Python qarşılığı                                                                                                  |
+| :---------------------- | :------------------------- | :-------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------- |
+| [`core`](packages/core) | `integrify/core`           |                                                        ✅                                                        | [`integrify-core`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/core)                     |
+| [`lsim`](packages/lsim) | `integrify/lsim`           |                                                        ✅                                                        | [`integrify-lsim`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/lsim)                     |
+| EPoint                  | `integrify/epoint`         | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-epoint`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/epoint)                 |
+| KapitalBank             | `integrify/kapitalbank`    | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-kapitalbank`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/kapitalbank)       |
+| Posta Güvercini         | `integrify/postaguvercini` | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-postaguvercini`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/postaguvercini) |
+| Azericard               | `integrify/azericard`      | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-azericard`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/azericard)           |
+| Clopos                  | `integrify/clopos`         | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-clopos`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/clopos)                 |
+| ECustoms (məxfi)        | —                          | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-ecustoms`](https://github.com/integrify-sdk/integrify-ecustoms)                                       |
 
 ✅ = publish olunub · ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) = planlaşdırılır
 
@@ -255,7 +255,7 @@ repository is the monorepo for the Integrify PHP package family: a shared core p
 independently published integration packages.
 
 It shares design goals and the exact wire protocol with
-[`integrify-python`](https://github.com/Integrify-SDK/integrify-python), but it is **not
+[`integrify-python`](https://github.com/integrify-sdk/integrify-python), but it is **not
 a transliteration of it**. The PHP API is written for PHP: real typed methods, `readonly`
 DTOs, constructor injection, exceptions. Where the two disagree on shape, PHP idiom wins
 — only the bytes on the wire have to match.
@@ -263,14 +263,14 @@ DTOs, constructor injection, exceptions. Where the two disagree on shape, PHP id
 ### Documentation
 
 - Project docs portal: [https://integrify.mmzeynalli.dev](https://integrify.mmzeynalli.dev)
-- Code repository: [https://github.com/Integrify-SDK/integrify-php](https://github.com/Integrify-SDK/integrify-php)
+- Code repository: [https://github.com/integrify-sdk/integrify-php](https://github.com/integrify-sdk/integrify-php)
 
-| Document | Purpose |
-| :--- | :--- |
-| [`PHP-PRIMER.md`](PHP-PRIMER.md) | This codebase explained for developers who know Python but not PHP |
-| [`PUBLISHING.md`](PUBLISHING.md) | How releases reach Packagist, and the one-time setup |
-| [`CLAUDE.md`](CLAUDE.md) | Internal conventions |
-| [`packages/core/README.md`](packages/core/README.md) | The core package in detail |
+| Document                                             | Purpose                                                            |
+| :--------------------------------------------------- | :----------------------------------------------------------------- |
+| [`PHP-PRIMER.md`](PHP-PRIMER.md)                     | This codebase explained for developers who know Python but not PHP |
+| [`PUBLISHING.md`](PUBLISHING.md)                     | How releases reach Packagist, and the one-time setup               |
+| [`CLAUDE.md`](CLAUDE.md)                             | Internal conventions                                               |
+| [`packages/core/README.md`](packages/core/README.md) | The core package in detail                                         |
 
 ### Key features
 
@@ -349,12 +349,12 @@ Python's `ApiResponse.ok` is `isSuccessful()` here, and `status_code` is `status
 
 #### Errors
 
-| Exception | When |
-| :--- | :--- |
-| `ValidationFailed` | DTO validation failed; nothing was sent |
-| `InvalidRequest` | The request could not be built: unencoded `?`/`#` in a path, an unfilled `{placeholder}`, a foreign host |
-| `RequestFailed` | Network failure, or HTTP >= 400 — carries `->request` and `->response` |
-| `MissingConfiguration` | A required environment variable is absent |
+| Exception              | When                                                                                                     |
+| :--------------------- | :------------------------------------------------------------------------------------------------------- |
+| `ValidationFailed`     | DTO validation failed; nothing was sent                                                                  |
+| `InvalidRequest`       | The request could not be built: unencoded `?`/`#` in a path, an unfilled `{placeholder}`, a foreign host |
+| `RequestFailed`        | Network failure, or HTTP >= 400 — carries `->request` and `->response`                                   |
+| `MissingConfiguration` | A required environment variable is absent                                                                |
 
 All of them implement `IntegrifyException`.
 

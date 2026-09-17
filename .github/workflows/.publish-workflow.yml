@@ -12,16 +12,18 @@ name: Publish
 # its composer.json sits at the root. Those mirrors are what Packagist watches.
 #
 #   integrify-php (this repo, where you work)
-#   ├── packages/core  ──split──▶  integrify-sdk/integrify-php-core  ──▶ integrify/core
-#   └── packages/lsim  ──split──▶  integrify-sdk/integrify-php-lsim  ──▶ integrify/lsim
+#   ├── packages/core  ──split──▶  integrify-sdk/integrify-core-php  ──▶ integrify/core
+#   └── packages/lsim  ──split──▶  integrify-sdk/integrify-lsim-php  ──▶ integrify/lsim
 #
-# You never commit to the mirrors by hand. This workflow force-pushes them.
+# You never commit to the mirrors by hand. This workflow replaces each mirror's
+# working tree from its package directory and pushes normally (no force), so a mirror
+# with branch protection on `main` will reject it.
 #
 # NOTHING HERE LISTS THE PACKAGES. `bin/packages.php` discovers them from
 # `packages/*/composer.json`, and the split matrix is built from its JSON output, so
 # adding an integration needs no edit to this file. The naming convention is:
 #
-#   packages/lsim/  ->  integrify/lsim  ->  integrify-sdk/integrify-php-lsim
+#   packages/lsim/  ->  integrify/lsim  ->  integrify-sdk/integrify-lsim-php
 #
 # To override a mirror name or keep a package unpublished, put it in that package's
 # own composer.json:
@@ -40,7 +42,8 @@ name: Publish
 # because Packagist parses the mirror's tag as the version number.
 #
 # SETUP: see PUBLISHING.md. In short you need one mirror repository per package and a
-# repo secret `SPLIT_TOKEN` (a PAT with `contents: write` on them).
+# repo secret `SPLIT_TOKEN` carrying `Contents: Read and write` on the mirrors only —
+# the default GITHUB_TOKEN cannot push to another repository.
 
 on:
   push:
