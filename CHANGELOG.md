@@ -11,12 +11,14 @@ independently; this file records repository-wide changes.
 
 ### Added
 
-- Initial repository layout: a Composer monorepo with `integrify/core` and
-  `integrify/lsim`, PHPUnit +
+- Initial repository layout: a Composer monorepo with `integrify/core`,
+  `integrify/epoint` and `integrify/lsim`, PHPUnit +
   PHPStan (`level: max`) + PHP-CS-Fixer tooling, and a GitHub Actions matrix over
   PHP 8.2 / 8.3 / 8.4.
-- Tag-driven publishing (`.github/workflows/publish.yml`): `<package>-<version>`
-  subtree-splits `packages/*` into read-only mirror repositories that Packagist watches.
+- Release-driven publishing (`.github/workflows/publish.yml`): publishing a GitHub
+  Release whose tag is `<package>-<version>` subtree-splits that one package into its
+  read-only mirror repository, which Packagist watches. Pushing a tag alone publishes
+  nothing, and neither does a draft release.
 - `.github/workflows/standalone.yml` — installs each package **alone**, with only its own
   `composer.json` filling `vendor/`, and runs its tests against that autoloader. The
   monorepo's shared root autoloader otherwise hides a package using a class it never
@@ -26,6 +28,10 @@ independently; this file records repository-wide changes.
 - `.pre-commit-config.yaml` — the same pre-commit setup as `integrify-python`, with every
   PHP hook delegating to a composer script so the hooks cannot drift from CI. Markup
   checks (XML/YAML/JSON) run on commit; `test` and `secure` run on push.
+- `integrify/epoint` — the EPoint payment gateway: payments, saved cards, payouts,
+  refunds and split payments, plus signed-callback decoding. All eleven request payloads
+  were diffed field-for-field against the ones `integrify-epoint`'s pydantic models
+  produce for the same arguments, and are identical.
 - `bin/packages.php` — package discovery, and the single source of truth for the CI
   matrices, mirror names and the root autoload map. Adding an integration no longer means
   editing five files: create the directory and run `composer sync-packages`.

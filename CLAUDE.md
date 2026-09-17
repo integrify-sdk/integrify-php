@@ -64,8 +64,7 @@ Nothing else is wired by hand. `bin/packages.php` discovers packages from
 | Root `composer.json` autoload | `composer sync-packages` rewrites it **and dumps the autoloader**; `composer check-packages` fails if either drifts |
 | `phpunit.xml.dist` | `<directory>packages/*/tests</directory>` — PHPUnit resolves `*` itself |
 | `phpstan.neon.dist` | `paths: [packages, bin]` — the whole directory (PHPStan does **not** support `*` in `paths`) |
-| `publish.yml` split matrix | `fromJSON` of `php bin/packages.php --json` |
-| `publish.yml` tag filter | `'*-[0-9]*'` — matches any `<package>-<version>` |
+| `publish.yml` release target | the release's tag name, `<package>-<version>`, looked up in the same JSON |
 | `standalone.yml` matrix | the same JSON |
 
 The convention that makes discovery work — all three must agree:
@@ -302,9 +301,19 @@ version from the Git tag. So (a) `composer.json` must carry **no** `version` fie
 (b) the monorepo cannot publish two packages by itself — `.github/workflows/publish.yml`
 subtree-splits `packages/*` into read-only mirror repositories that Packagist watches.
 
-Publishing is tag-driven: `<package>-<version>` (e.g. `core-0.1.0`, `lsim-0.1.0`). The
-workflow discovers packages rather than listing them, so a new integration is publishable
-the moment its directory exists and its mirror repo is created.
+**Publishing a GitHub Release is what ships a version** — the same trigger as
+`integrify-python`. The release's tag name says which package and which version:
+`<package>-<version>` (e.g. `core-0.1.0`, `epoint-0.1.0`).
+
+Pushing a tag on its own publishes nothing. A tag with no release is just a tag, and a
+draft release does not fire either — only `published` does. So you can tag whenever you
+like and still decide separately when to ship.
+
+The workflow discovers packages rather than listing them, so a new integration is
+publishable the moment its directory exists and its mirror repo is created. Only the
+package named in the tag is touched; the other mirrors are left alone, which means a
+mirror's `main` moves only on that package's own releases.
+
 Add the `CHANGELOG.md` entry first — the workflow refuses to publish a version the
 changelog does not mention, which is this repo's stand-in for Python's "tag matches
 `pyproject.toml`" check. The tag is renamed on the way into the mirror

@@ -40,11 +40,13 @@
     "autoload": {
         "psr-4": {
             "Integrify\\": "packages/core/src/",
+            "Integrify\\EPoint\\": "packages/epoint/src/",
             "Integrify\\Lsim\\": "packages/lsim/src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
+            "Integrify\\EPoint\\Tests\\": "packages/epoint/tests/",
             "Integrify\\Lsim\\Tests\\": "packages/lsim/tests/",
             "Integrify\\Tests\\": "packages/core/tests/"
         }

@@ -2,12 +2,7 @@ name: Publish
 
 # Publishing PHP packages works nothing like PyPI.
 #
-# You never upload a build artefact. Packagist reads a Git repository, takes the
-# `composer.json` at its ROOT, and derives available versions from that repo's Git
-# tags. Because it only ever looks at the root, one repository can expose exactly
-# one Composer package — a monorepo cannot publish two packages by itself.
-#
-# The standard answer (Symfony, Laravel, Filament all do this) is a "subtree split":
+# The standard way (Symfony, Laravel, Filament all do this) is a "subtree split":
 # CI copies each package directory into its own read-only mirror repository, where
 # its composer.json sits at the root. Those mirrors are what Packagist watches.
 #
@@ -15,13 +10,9 @@ name: Publish
 #   ├── packages/core  ──split──▶  integrify-sdk/integrify-core-php  ──▶ integrify/core
 #   └── packages/lsim  ──split──▶  integrify-sdk/integrify-lsim-php  ──▶ integrify/lsim
 #
-# You never commit to the mirrors by hand. This workflow replaces each mirror's
-# working tree from its package directory and pushes normally (no force), so a mirror
-# with branch protection on `main` will reject it.
-#
-# NOTHING HERE LISTS THE PACKAGES. `bin/packages.php` discovers them from
-# `packages/*/composer.json`, and the split matrix is built from its JSON output, so
-# adding an integration needs no edit to this file. The naming convention is:
+# `bin/packages.php` discovers them from
+# `packages/*/composer.json`, so adding an integration needs no edit to this file.
+# The naming convention is:
 #
 #   packages/lsim/  ->  integrify/lsim  ->  integrify-sdk/integrify-lsim-php
 #
@@ -30,25 +21,26 @@ name: Publish
 #
 #   "extra": {"integrify": {"mirror": "other-name", "publish": false}}
 #
-# TRIGGERS
-#   push to main          -> keep the mirrors' `main` branch in sync (no release)
-#   tag `<package>-<ver>` -> verify, test, then split AND push the version tag,
-#                            which is what actually publishes a new version
+# The release's tag name says which package and which version:
 #
-#   core-0.1.0  -> publishes integrify/core 0.1.0
-#   lsim-0.1.0  -> publishes integrify/lsim 0.1.0
+#   <package>-<x.y.z>
 #
-# Note the tag is renamed on the way out: the mirror gets `0.1.0`, not `lsim-0.1.0`,
-# because Packagist parses the mirror's tag as the version number.
+#   core-0.1.0    -> publishes integrify/core   0.1.0
+#   lsim-0.1.0    -> publishes integrify/lsim   0.1.0
+#   epoint-0.1.0  -> publishes integrify/epoint 0.1.0
+#
+#
+# Only the package named in the tag is touched. The other mirrors are left exactly as
+# they are, which means a mirror's `main` moves only on that package's own releases.
 #
 # SETUP, once per package:
 #
 #   1. Create the mirror repo under `integrify-sdk`, and TICK "Add a README file".
-#      It must not be a zero-commit repo: the action runs `git checkout main`, then on
-#      failure `git checkout -b main` and straight away `git push origin main` — on an
-#      unborn branch there is nothing for `main` to point at, so the push dies with
-#      `error: src refspec main does not match any`. Any one commit is enough; the
-#      split replaces the whole working tree on the first run anyway.
+#      It must not be a zero-commit repo: the split action runs `git checkout main`,
+#      then on failure `git checkout -b main` and straight away `git push origin main`
+#      — on an unborn branch there is nothing for `main` to point at, so the push dies
+#      with `error: src refspec main does not match any`. Any one commit is enough;
+#      the split replaces the whole working tree on the first run anyway.
 #   2. Submit the mirror to packagist.org once.
 #
 # And once for the whole repo: a secret `SPLIT_TOKEN` with `Contents: Read and write`
@@ -56,22 +48,17 @@ name: Publish
 # whatever you put in `permissions:`.
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      # `<anything>-<digit>...` — matches every package without naming one.
-      # A tag like `v1.0` or `nightly` does not match and starts no run at all.
-      - '*-[0-9]*'
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to publish (e.g. lsim-0.1.0). Leave empty to only sync branches.'
-        required: false
+        description: 'Tag to publish (e.g. epoint-0.1.0). Must already exist.'
+        required: true
         type: string
 
 concurrency:
-  group: publish-${{ github.ref }}
+  group: publish-${{ github.event.release.tag_name || github.event.inputs.tag }}
   cancel-in-progress: false
 
 permissions:
@@ -79,15 +66,12 @@ permissions:
 
 jobs:
   # ---------------------------------------------------------------------------- #
-  # Discover the packages, and work out what we are doing: a plain branch sync, or
-  # a release of one package.
+  # Work out which package the release names, and where it has to be pushed.
   # ---------------------------------------------------------------------------- #
   resolve:
     name: Resolve target
     runs-on: ubuntu-latest
     outputs:
-      packages: ${{ steps.discover.outputs.packages }}
-      is_release: ${{ steps.target.outputs.is_release }}
       package: ${{ steps.target.outputs.package }}
       version: ${{ steps.target.outputs.version }}
       tag: ${{ steps.target.outputs.tag }}
@@ -101,41 +85,19 @@ jobs:
           coverage: none
           tools: none
 
-      - name: Discover packages
-        id: discover
-        run: |
-          set -euo pipefail
-
-          PACKAGES="$(php bin/packages.php --json)"
-
-          echo "Found: $PACKAGES"
-          echo "packages=$PACKAGES" >> "$GITHUB_OUTPUT"
-
       - name: Resolve the release target
         id: target
-        env:
-          PACKAGES: ${{ steps.discover.outputs.packages }}
         run: |
           set -euo pipefail
 
-          TAG=""
-          if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            TAG="${{ github.ref_name }}"
-          elif [[ -n "${{ github.event.inputs.tag || '' }}" ]]; then
-            TAG="${{ github.event.inputs.tag }}"
-          fi
+          TAG="${{ github.event.release.tag_name || github.event.inputs.tag }}"
 
           if [[ -z "$TAG" ]]; then
-            echo "No tag: branch sync only."
-            {
-              echo "is_release=false"
-              echo "package="
-              echo "version="
-              echo "tag="
-              echo "mirror="
-            } >> "$GITHUB_OUTPUT"
-            exit 0
+            echo "::error::No tag to publish. A release must carry a tag name."
+            exit 1
           fi
+
+          echo "Tag: $TAG"
 
           # <package>-<semver>, e.g. lsim-0.1.0 or core-1.0.0-beta.1
           if [[ ! "$TAG" =~ ^([a-z0-9-]+)-([0-9]+\.[0-9]+\.[0-9]+.*)$ ]]; then
@@ -146,8 +108,11 @@ jobs:
           PACKAGE="${BASH_REMATCH[1]}"
           VERSION="${BASH_REMATCH[2]}"
 
-          # The tag prefix must name a discovered package. This catches a typo
-          # (`lsimm-0.1.0`) before anything is pushed anywhere.
+          # The tag prefix must name a package this repo actually publishes. This is
+          # what catches a typo (`lsimm-0.1.0`) before anything is pushed anywhere,
+          # and it is also why the root `integrify-1.0.0` form has no meaning here:
+          # unlike the Python repo, this monorepo publishes no umbrella package.
+          PACKAGES="$(php bin/packages.php --json)"
           MIRROR="$(jq -r --arg d "$PACKAGE" '.[] | select(.directory == $d) | .mirror' <<< "$PACKAGES")"
 
           if [[ -z "$MIRROR" ]]; then
@@ -158,7 +123,6 @@ jobs:
           fi
 
           {
-            echo "is_release=true"
             echo "package=$PACKAGE"
             echo "version=$VERSION"
             echo "tag=$TAG"
@@ -169,11 +133,12 @@ jobs:
 
   # ---------------------------------------------------------------------------- #
   # Release guards. Everything here is a reason NOT to publish.
+  #
+  # These run against the tag, not against main, because the tag is what ships.
   # ---------------------------------------------------------------------------- #
   verify:
     name: Verify release
     needs: resolve
-    if: needs.resolve.outputs.is_release == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -204,7 +169,7 @@ jobs:
           fi
 
           if ! grep -qF "[$VERSION]" "$FILE"; then
-            echo "::error::$FILE has no '[$VERSION]' entry. Add the changelog entry before tagging."
+            echo "::error::$FILE has no '[$VERSION]' entry. Add the changelog entry before releasing."
             exit 1
           fi
           echo "OK: $FILE documents $VERSION."
@@ -243,61 +208,29 @@ jobs:
         run: composer run test
 
   # ---------------------------------------------------------------------------- #
-  # Push each package into its mirror repository.
+  # Push the released package into its mirror, and tag it there.
   #
-  # On a branch push this only syncs `main` on the mirrors. On a release it also
-  # pushes the version tag, and that tag is what Packagist turns into a version.
-  #
-  # The matrix comes from `bin/packages.php`, so this needs no edit when a package
-  # is added.
+  # That mirror tag is what Packagist turns into a published version.
   # ---------------------------------------------------------------------------- #
   split:
-    name: "Split ${{ matrix.package.directory }}"
+    name: "Split ${{ needs.resolve.outputs.package }} ${{ needs.resolve.outputs.version }}"
     needs: [resolve, verify]
-    # `always()` so branch syncs still run when `verify` was skipped, but we still
-    # stop if verify actually failed.
-    if: always() && needs.verify.result != 'failure' && needs.verify.result != 'cancelled'
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        package: ${{ fromJSON(needs.resolve.outputs.packages) }}
-
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.resolve.outputs.is_release == 'true' && needs.resolve.outputs.tag || github.ref }}
+          ref: ${{ needs.resolve.outputs.tag }}
           fetch-depth: 0
           persist-credentials: false
 
-      # Sync the mirror's main branch. Runs for every package on every push, so the
-      # mirrors always reflect the monorepo even between releases.
-      - name: Sync branch
-        if: needs.resolve.outputs.is_release != 'true'
-        uses: danharrin/monorepo-split-github-action@v2.4.5
-        env:
-          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN }}
-        with:
-          package_directory: 'packages/${{ matrix.package.directory }}'
-          repository_organization: 'integrify-sdk'
-          repository_name: '${{ matrix.package.mirror }}'
-          branch: 'main'
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-
-      # Release: only the package named in the tag gets the version tag pushed.
       - name: Split and tag release
-        if: >-
-          needs.resolve.outputs.is_release == 'true' &&
-          needs.resolve.outputs.package == matrix.package.directory
         uses: danharrin/monorepo-split-github-action@v2.4.5
         env:
           GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN }}
         with:
-          package_directory: 'packages/${{ matrix.package.directory }}'
+          package_directory: 'packages/${{ needs.resolve.outputs.package }}'
           repository_organization: 'integrify-sdk'
-          repository_name: '${{ matrix.package.mirror }}'
+          repository_name: '${{ needs.resolve.outputs.mirror }}'
           branch: 'main'
           # Note: the version only, without the `core-` / `lsim-` prefix.
           tag: '${{ needs.resolve.outputs.version }}'
@@ -305,20 +238,18 @@ jobs:
           user_email: 'github-actions[bot]@users.noreply.github.com'
 
   # ---------------------------------------------------------------------------- #
-  # Nudge Packagist. Optional: if the mirrors have the Packagist GitHub webhook
-  # installed, they update on their own within a minute and this is a no-op.
+  # Nudge Packagist. Optional: if the mirror has the Packagist GitHub webhook
+  # installed, it updates on its own within a minute and this is a no-op.
   # ---------------------------------------------------------------------------- #
   notify:
     name: Notify Packagist
     needs: [resolve, split]
-    if: needs.resolve.outputs.is_release == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Ping Packagist
         env:
           PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
           PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
-          # Resolved from the package's own manifest — no per-package branch here.
           MIRROR: ${{ needs.resolve.outputs.mirror }}
         run: |
           if [[ -z "${PACKAGIST_TOKEN:-}" ]]; then
