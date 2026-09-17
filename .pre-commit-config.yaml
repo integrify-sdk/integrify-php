@@ -16,6 +16,10 @@
 #
 # Requires `composer install` to have been run: every PHP hook needs vendor/bin.
 
+# A hook with no `stages:` runs at EVERY stage, so without this the whole suite
+# would run again on push. Anything that should also run on push says so explicitly.
+default_stages: [pre-commit]
+
 repos:
   # --------------------------------------------------------------------------
   # Markup. Cheap, and it catches the class of mistake that is invisible until a
@@ -39,7 +43,9 @@ repos:
       # conflict waiting to happen.
       - id: check-case-conflict
       - id: end-of-file-fixer
+        stages: [pre-commit]
       - id: trailing-whitespace
+        stages: [pre-commit]
         args: [--markdown-linebreak-ext=md]
 
   # --------------------------------------------------------------------------
