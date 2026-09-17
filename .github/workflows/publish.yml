@@ -1,0 +1,288 @@
+name: Publish
+
+# Publishing PHP packages works nothing like PyPI.
+#
+# The standard way (Symfony, Laravel, Doctrine all do this) is a "subtree split":
+# CI copies each package directory into its own read-only mirror repository, where
+# its composer.json sits at the root. Those mirrors are what Packagist watches.
+#
+#   integrify-php (this repo, where you work)
+#   ├── packages/core      ──split──▶  Integrify-SDK/integrify-php-core      ──▶ integrify/core
+#   └── packages/epoint  ──split──▶  Integrify-SDK/integrify-php-epoint  ──▶ integrify/epoint
+#
+# You never commit to the mirrors by hand. This workflow force-pushes them.
+#
+# TRIGGERS
+#   push to main          -> keep the mirrors' `main` branch in sync (no release)
+#   tag `<package>-<ver>` -> verify, test, then split AND push the version tag,
+#                            which is what actually publishes a new version
+#
+#   core-1.0.1      -> publishes integrify/core     1.0.1
+#
+# Note the tag is renamed on the way out: the mirror gets `1.0.1`, not `core-1.0.1`,
+# because Packagist parses the mirror's tag as the version number.
+#
+# SETUP: see PUBLISHING.md. In short you need the two mirror repositories to exist
+# and a repo secret `SPLIT_TOKEN` (a PAT with `repo` scope) that may write to them.
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'core-*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish (e.g. core-1.0.0). Leave empty to only sync branches.'
+        required: false
+        type: string
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ---------------------------------------------------------------------------- #
+  # Work out what we are doing: a plain branch sync, or a release of one package.
+  # ---------------------------------------------------------------------------- #
+  resolve:
+    name: Resolve target
+    runs-on: ubuntu-latest
+    outputs:
+      is_release: ${{ steps.r.outputs.is_release }}
+      package: ${{ steps.r.outputs.package }}
+      version: ${{ steps.r.outputs.version }}
+      tag: ${{ steps.r.outputs.tag }}
+    steps:
+      - id: r
+        run: |
+          set -euo pipefail
+
+          TAG=""
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            TAG="${{ github.ref_name }}"
+          elif [[ -n "${{ github.event.inputs.tag || '' }}" ]]; then
+            TAG="${{ github.event.inputs.tag }}"
+          fi
+
+          if [[ -z "$TAG" ]]; then
+            echo "No tag: branch sync only."
+            {
+              echo "is_release=false"
+              echo "package="
+              echo "version="
+              echo "tag="
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # <package>-<semver>, e.g. epoint-1.2.0 or core-2.0.0-beta.1
+          if [[ ! "$TAG" =~ ^([a-z0-9-]+)-([0-9]+\.[0-9]+\.[0-9]+.*)$ ]]; then
+            echo "::error::Tag '$TAG' is not in <package>-<version> form (e.g. epoint-1.0.0)."
+            exit 1
+          fi
+
+          PACKAGE="${BASH_REMATCH[1]}"
+          VERSION="${BASH_REMATCH[2]}"
+
+          {
+            echo "is_release=true"
+            echo "package=$PACKAGE"
+            echo "version=$VERSION"
+            echo "tag=$TAG"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Releasing '$PACKAGE' version '$VERSION' (tag: $TAG)."
+
+  # ---------------------------------------------------------------------------- #
+  # Release guards. Everything here is a reason NOT to publish.
+  # ---------------------------------------------------------------------------- #
+  verify:
+    name: Verify release
+    needs: resolve
+    if: needs.resolve.outputs.is_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Package directory exists
+        run: |
+          DIR="packages/${{ needs.resolve.outputs.package }}"
+          if [[ ! -d "$DIR" ]]; then
+            echo "::error::$DIR does not exist. Tag prefix must match a directory under packages/."
+            exit 1
+          fi
+          echo "OK: $DIR"
+
+      - name: Tag is reachable from main
+        run: |
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::Tag ${{ needs.resolve.outputs.tag }} is not an ancestor of main; refusing to publish an unmerged commit."
+            exit 1
+          fi
+          echo "OK: tag is reachable from main."
+
+      - name: CHANGELOG documents this version
+        run: |
+          # Composer takes the version from the Git tag, so unlike Python there is
+          # no version field in composer.json to cross-check. The CHANGELOG entry is
+          # the equivalent guard against tagging something you never wrote up.
+          FILE="packages/${{ needs.resolve.outputs.package }}/CHANGELOG.md"
+          VERSION="${{ needs.resolve.outputs.version }}"
+
+          if [[ ! -f "$FILE" ]]; then
+            echo "::error::$FILE not found."
+            exit 1
+          fi
+
+          if ! grep -qF "[$VERSION]" "$FILE"; then
+            echo "::error::$FILE has no '[$VERSION]' entry. Add the changelog entry before tagging."
+            exit 1
+          fi
+          echo "OK: $FILE documents $VERSION."
+
+      - name: composer.json has no version field
+        run: |
+          # Packagist derives the version from the tag. A hardcoded `version` in
+          # composer.json silently overrides it and is a classic footgun.
+          FILE="packages/${{ needs.resolve.outputs.package }}/composer.json"
+          if grep -qE '^\s*"version"\s*:' "$FILE"; then
+            echo "::error::$FILE declares a \"version\" field. Remove it — Packagist reads the Git tag."
+            exit 1
+          fi
+          echo "OK: no version field."
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, json
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate every composer.json
+        run: |
+          composer validate --strict --no-check-publish
+          for f in packages/*/composer.json; do
+            echo "--- $f"
+            composer validate --strict --no-check-publish "$f"
+          done
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Code style
+        run: composer run lint
+
+      - name: Static analysis
+        run: composer run type-check
+
+      - name: Tests
+        run: composer run test
+
+  # ---------------------------------------------------------------------------- #
+  # Push each package into its mirror repository.
+  #
+  # On a branch push this only syncs `main` on the mirrors. On a release it also
+  # pushes the version tag, and that tag is what Packagist turns into a version.
+  # ---------------------------------------------------------------------------- #
+  split:
+    name: "Split ${{ matrix.package.directory }}"
+    needs: [resolve, verify]
+    # `always()` so branch syncs still run when `verify` was skipped, but we still
+    # stop if verify actually failed.
+    if: always() && needs.verify.result != 'failure' && needs.verify.result != 'cancelled'
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - directory: core
+            mirror: integrify-php-core
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.is_release == 'true' && needs.resolve.outputs.tag || github.ref }}
+          fetch-depth: 0
+
+      # Sync the mirror's main branch. Runs for every package on every push, so the
+      # mirrors always reflect the monorepo even between releases.
+      - name: Sync branch
+        if: needs.resolve.outputs.is_release != 'true'
+        uses: danharrin/monorepo-split-github-action@v2.4.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN }}
+        with:
+          package_directory: 'packages/${{ matrix.package.directory }}'
+          repository_organization: 'Integrify-SDK'
+          repository_name: '${{ matrix.package.mirror }}'
+          branch: 'main'
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+
+      # Release: only the package named in the tag gets the version tag pushed.
+      - name: Split and tag release
+        if: >-
+          needs.resolve.outputs.is_release == 'true' &&
+          needs.resolve.outputs.package == matrix.package.directory
+        uses: danharrin/monorepo-split-github-action@v2.4.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN }}
+        with:
+          package_directory: 'packages/${{ matrix.package.directory }}'
+          repository_organization: 'Integrify-SDK'
+          repository_name: '${{ matrix.package.mirror }}'
+          branch: 'main'
+          tag: '${{ needs.resolve.outputs.version }}'
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+
+  # ---------------------------------------------------------------------------- #
+  # Nudge Packagist. Optional: if the mirrors have the Packagist GitHub webhook
+  # installed, they update on their own within a minute and this is a no-op.
+  # ---------------------------------------------------------------------------- #
+  notify:
+    name: Notify Packagist
+    needs: [resolve, split]
+    if: needs.resolve.outputs.is_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Packagist
+        env:
+          PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
+          PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+          MIRROR: >-
+            ${{ needs.resolve.outputs.package == 'core'
+                && 'integrify-php-core'
+                || 'integrify-php-epoint' }}
+        run: |
+          if [[ -z "${PACKAGIST_TOKEN:-}" ]]; then
+            echo "PACKAGIST_TOKEN not set — relying on the Packagist webhook on the mirror repository."
+            exit 0
+          fi
+
+          curl -sSf -XPOST \
+            -H 'content-type:application/json' \
+            "https://packagist.org/api/update-package?username=${PACKAGIST_USERNAME}&apiToken=${PACKAGIST_TOKEN}" \
+            -d "{\"repository\":{\"url\":\"https://github.com/Integrify-SDK/${MIRROR}\"}}"
+
+          echo "Asked Packagist to re-crawl ${MIRROR}."
+
+      - name: Summary
+        run: |
+          {
+            echo "### Published"
+            echo ""
+            echo "\`integrify/${{ needs.resolve.outputs.package }}\` **${{ needs.resolve.outputs.version }}**"
+            echo ""
+            echo "\`\`\`console"
+            echo "composer require integrify/${{ needs.resolve.outputs.package }}:^${{ needs.resolve.outputs.version }}"
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"

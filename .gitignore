@@ -1,0 +1,23 @@
+/vendor/
+/packages/*/vendor/
+composer.lock
+packages/*/composer.lock
+
+/coverage/
+.phpunit.cache/
+.phpunit.result.cache
+.php-cs-fixer.cache
+.phpstan.cache/
+
+.env
+.env.*
+!.env.example
+
+.idea/
+.vscode/
+*.log
+.DS_Store
+Thumbs.db
+
+# User Defined
+swagger.json

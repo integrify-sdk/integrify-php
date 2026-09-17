@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: Integrify-Core (PHP)
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Miradil
+    family-names: Zeynalli
+    email: miradil.zeynalli@gmail.com
+repository-code: 'https://github.com/Integrify-SDK/integrify-php/tree/main/packages/core'
+url: 'https://integrify.mmzeynalli.dev/'
+abstract: >-
+  Integrify is a request library that eases API integrations. This is the core
+  library used by the other Integrify PHP packages.
+keywords:
+  - integrify
+  - integrify-core
+  - php
+license: MIT
+version: 0.1.0
+date-released: '2026-09-17'

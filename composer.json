@@ -1,0 +1,80 @@
+{
+    "name": "integrify/monorepo",
+    "description": "Development workspace for the Integrify PHP packages. Not published \u2014 the packages under packages/* are published individually via subtree splits (see PUBLISHING.md).",
+    "type": "project",
+    "keywords": [
+        "integrify",
+        "api",
+        "integration",
+        "azerbaijan",
+        "monorepo"
+    ],
+    "homepage": "https://integrify.mmzeynalli.dev",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "mmzeynalli",
+            "email": "miradil.zeynalli@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/Integrify-SDK/integrify-php/issues",
+        "source": "https://github.com/Integrify-SDK/integrify-php",
+        "docs": "https://integrify.mmzeynalli.dev"
+    },
+    "require": {
+        "php": ">=8.2",
+        "php-http/discovery": "^1.20",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.1",
+        "psr/http-message": "^1.1 || ^2.0",
+        "psr/log": "^2.0 || ^3.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.82",
+        "guzzlehttp/guzzle": "^7.9",
+        "nyholm/psr7": "^1.8",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^11.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Integrify\\": "packages/core/src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Integrify\\Tests\\": "packages/core/tests/"
+        }
+    },
+    "scripts": {
+        "format": "php-cs-fixer fix",
+        "lint": "php-cs-fixer fix --dry-run --diff",
+        "type-check": "phpstan analyse",
+        "test": "phpunit",
+        "coverage": "phpunit --coverage-html coverage --coverage-text",
+        "secure": "composer audit",
+        "all": [
+            "@format",
+            "@type-check",
+            "@test"
+        ]
+    },
+    "scripts-descriptions": {
+        "format": "Fix code style in place (PHP-CS-Fixer)",
+        "lint": "Check code style without writing (PHP-CS-Fixer)",
+        "type-check": "Static analysis (PHPStan, level max)",
+        "test": "Run every package's test suite (PHPUnit)",
+        "coverage": "Run tests and emit an HTML + text coverage report",
+        "secure": "Audit dependencies for known advisories",
+        "all": "format + type-check + test"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

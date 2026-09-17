@@ -1,0 +1,13 @@
+parameters:
+    level: max
+    paths:
+        - packages/core/src
+        - packages/core/tests
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # `describeProperty()` intersection/DNF tiplərini oxuya bilmir, ona görə belə
+        # property-lər üçün çevirmə edilmir və konstruktor `TypeError` ata bilir.
+        # PHPStan tiplərin uyğun gəldiyini fərz etdiyi üçün catch-i "ölü" sayır.
+        -
+            identifier: catch.neverThrown
+            path: packages/core/src/Dto/Mapper.php
