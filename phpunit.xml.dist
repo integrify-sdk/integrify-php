@@ -7,21 +7,29 @@
          failOnRisky="true"
          beStrictAboutOutputDuringTests="true"
          cacheDirectory=".phpunit.cache">
+    <!-- Bir testsuite, bütün paketlər: `directory` elementi `*` dəstəkləyir, ona
+         görə yeni paket əlavə edəndə burada dəyişiklik lazım deyil.
+         Tək paketi işlətmək üçün: `vendor/bin/phpunit packages/lsim/tests` -->
     <testsuites>
-        <testsuite name="core">
-            <directory>packages/core/tests</directory>
+        <testsuite name="packages">
+            <directory>packages/*/tests</directory>
         </testsuite>
     </testsuites>
 
     <source>
         <include>
-            <directory>packages/core/src</directory>
+            <directory>packages/*/src</directory>
         </include>
     </source>
 
-    <coverage>
-        <report>
-            <text outputFile="php://stdout" showOnlySummary="true"/>
-        </report>
-    </coverage>
+    <!-- Burada `coverage` bloku QƏSDƏN yoxdur.
+
+         `report` uşaq elementi olan `coverage` `hasCoverageReport()`-u hər çağırışda
+         `true` edir, bu isə Xdebug və ya PCOV tələb edir. Driver yoxdursa PHPUnit
+         runner xəbərdarlığı verir, `failOnPhpunitWarning` (default: true) səbəbindən
+         isə `composer test` sıfırdan fərqli kodla bitir — bütün testlər keçsə belə.
+
+         Coverage yalnız açıq şəkildə istənəndə hesablanır: `composer coverage`, və ya
+         CI-da coverage bayraqları ilə. `source` bloku qalır; o, driver tələb etmir və
+         coverage filtri kimi işləyir. -->
 </phpunit>

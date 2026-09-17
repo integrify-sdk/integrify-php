@@ -80,4 +80,4 @@ First release.
   `test` / `testing` / `sandbox` / `dev` / `development` / `local`) and a `strict:` flag
   that raises `MissingConfiguration` on an unrecognised value.
 
-[0.1.0]: https://github.com/Integrify-SDK/integrify-php/releases/tag/core-0.1.0
+[0.1.0]: https://github.com/integrify-sdk/integrify-php/releases/tag/core-0.1.0

@@ -18,9 +18,9 @@
 
 **Dokumentasiya**: [https://integrify.mmzeynalli.dev](https://integrify.mmzeynalli.dev)
 
-**Kod**: [https://github.com/Integrify-SDK/integrify-php/tree/main/packages/core](https://github.com/Integrify-SDK/integrify-php/tree/main/packages/core)
+**Kod**: [https://github.com/integrify-sdk/integrify-php/tree/main/packages/core](https://github.com/integrify-sdk/integrify-php/tree/main/packages/core)
 
-**Python qarşılığı**: [`integrify-core`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/core)
+**Python qarşılığı**: [`integrify-core`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/core)
 
 ---
 
@@ -53,18 +53,18 @@ composer require guzzlehttp/guzzle nyholm/psr7
 
 ## Nədən ibarətdir
 
-| Sinif | Məqsəd |
-| :--- | :--- |
-| `Integrify\Client` | İnteqrasiya klientlərinin baza class-ı |
-| `Integrify\Response` | Cavab: `status`, `headers`, `body` + DTO-ya çevirmə |
-| `Integrify\Environment` | `Test` / `Prod` |
-| `Integrify\Http\Transport` | Sorğu göndərən qatın interfeysi |
-| `Integrify\Http\HttpTransport` | PSR-18 implementasiyası |
-| `Integrify\Http\RecordingTransport` | Testlər və debug üçün implementasiya |
-| `Integrify\Http\Request` | Göndəriləcək sorğunun dəyişməz təsviri |
-| `Integrify\Dto\Data` | DTO-ların baza class-ı |
-| `Integrify\Dto\Attribute\Field` | Field adı və validasiya qaydaları |
-| `Integrify\Exception\*` | `IntegrifyException` iyerarxiyası |
+| Sinif                               | Məqsəd                                              |
+| :---------------------------------- | :-------------------------------------------------- |
+| `Integrify\Client`                  | İnteqrasiya klientlərinin baza class-ı              |
+| `Integrify\Response`                | Cavab: `status`, `headers`, `body` + DTO-ya çevirmə |
+| `Integrify\Environment`             | `Test` / `Prod`                                     |
+| `Integrify\Http\Transport`          | Sorğu göndərən qatın interfeysi                     |
+| `Integrify\Http\HttpTransport`      | PSR-18 implementasiyası                             |
+| `Integrify\Http\RecordingTransport` | Testlər və debug üçün implementasiya                |
+| `Integrify\Http\Request`            | Göndəriləcək sorğunun dəyişməz təsviri              |
+| `Integrify\Dto\Data`                | DTO-ların baza class-ı                              |
+| `Integrify\Dto\Attribute\Field`     | Field adı və validasiya qaydaları                   |
+| `Integrify\Exception\*`             | `IntegrifyException` iyerarxiyası                   |
 
 ## İstifadəsi
 
@@ -142,16 +142,16 @@ final class MyClient extends Client
 
 Baza class-ın verdiyi köməkçilər:
 
-| Metod | Nə edir |
-| :--- | :--- |
-| `get()` / `post()` / `put()` / `delete()` | Sorğu göndərir |
-| `send()` | Ümumi forma (metod, path, body, query, header) |
-| `uri($template, $params)` | `{ad}` şablonunu **rawurlencode** ilə doldurur |
-| `listBody(iterable $items)` | DTO siyahısını kök səviyyəli JSON array-ə çevirir |
-| `objectBody(array $body)` | Boş massivi JSON **obyekti** (`{}`) kimi göndərir |
-| `defaultHeaders()` | Hər sorğuya əlavə olunan header-lər (auth, dil) |
-| `mergeHeaders()` | Header-ləri böyük-kiçik hərf fərqi olmadan birləşdirir |
-| `assertSameHost()` | Mütləq url-in host yoxlaması (genişləndirilə bilər) |
+| Metod                                     | Nə edir                                                |
+| :---------------------------------------- | :----------------------------------------------------- |
+| `get()` / `post()` / `put()` / `delete()` | Sorğu göndərir                                         |
+| `send()`                                  | Ümumi forma (metod, path, body, query, header)         |
+| `uri($template, $params)`                 | `{ad}` şablonunu **rawurlencode** ilə doldurur         |
+| `listBody(iterable $items)`               | DTO siyahısını kök səviyyəli JSON array-ə çevirir      |
+| `objectBody(array $body)`                 | Boş massivi JSON **obyekti** (`{}`) kimi göndərir      |
+| `defaultHeaders()`                        | Hər sorğuya əlavə olunan header-lər (auth, dil)        |
+| `mergeHeaders()`                          | Header-ləri böyük-kiçik hərf fərqi olmadan birləşdirir |
+| `assertSameHost()`                        | Mütləq url-in host yoxlaması (genişləndirilə bilər)    |
 
 ### Url qurmaq
 
@@ -188,15 +188,15 @@ final readonly class Response
 }
 ```
 
-| Metod | Nə edir |
-| :--- | :--- |
-| `isSuccessful()` | Status kodu 400-dən kiçikdirsə `true` (Python-dakı `ok`) |
-| `header($name)` | Header-in ilk dəyəri |
-| `headerValues($name)` | Header-in bütün dəyərləri (`Set-Cookie`, `Link` və s.) |
-| `toArray()` | Body-ni massiv kimi. JSON deyilsə **exception yox**, boş massiv |
-| `to($dto)` | Body-ni DTO-ya çevirir |
-| `toList($dto)` | Kök səviyyəli JSON array-i DTO siyahısına çevirir |
-| `Response::json($payload, $status)` | Testlər üçün hazır cavab qurur |
+| Metod                               | Nə edir                                                         |
+| :---------------------------------- | :-------------------------------------------------------------- |
+| `isSuccessful()`                    | Status kodu 400-dən kiçikdirsə `true` (Python-dakı `ok`)        |
+| `header($name)`                     | Header-in ilk dəyəri                                            |
+| `headerValues($name)`               | Header-in bütün dəyərləri (`Set-Cookie`, `Link` və s.)          |
+| `toArray()`                         | Body-ni massiv kimi. JSON deyilsə **exception yox**, boş massiv |
+| `to($dto)`                          | Body-ni DTO-ya çevirir                                          |
+| `toList($dto)`                      | Kök səviyyəli JSON array-i DTO siyahısına çevirir               |
+| `Response::json($payload, $status)` | Testlər üçün hazır cavab qurur                                  |
 
 Cavab JSON deyilsə (məs., gateway xətası zamanı HTML səhifə və ya boş body),
 `toArray()` boş massiv qaytarır ki, sorğu axını crash olmasın; xətanı `status` və
@@ -227,13 +227,13 @@ final readonly class GoodsItem extends Data
 `of` yalnız `Data` alt class-ı və ya enum ola bilər — səhv ad `LogicException` verir,
 çünki əks halda bütün element validasiyası səssizcə söndürülərdi.
 
-| Metod | Nə edir |
-| :--- | :--- |
-| `Data::from(array)` | Massivdən DTO qurur və validasiya edir |
-| `Data::wrap(array\|Data)` | Massiv və ya hazır DTO qəbul edir |
-| `Data::wrapAll(iterable)` | Siyahını DTO siyahısına çevirir |
-| `$dto->toArray(skipNull:, only:)` | API-nin gözlədiyi massiv |
-| `Data::properties()` | Property adları, elan olunma sırasında |
+| Metod                             | Nə edir                                |
+| :-------------------------------- | :------------------------------------- |
+| `Data::from(array)`               | Massivdən DTO qurur və validasiya edir |
+| `Data::wrap(array\|Data)`         | Massiv və ya hazır DTO qəbul edir      |
+| `Data::wrapAll(iterable)`         | Siyahını DTO siyahısına çevirir        |
+| `$dto->toArray(skipNull:, only:)` | API-nin gözlədiyi massiv               |
+| `Data::properties()`              | Property adları, elan olunma sırasında |
 
 Həm PHP-dəki property adı, həm də API-dəki ad qəbul olunur. Validasiya xətaları bir yerə
 toplanıb tək `ValidationFailed`-də qaytarılır:
@@ -258,12 +258,12 @@ Detallar:
 
 ## Xətalar
 
-| Exception | Nə vaxt |
-| :--- | :--- |
-| `ValidationFailed` | DTO validasiyası uğursuz (sorğu göndərilmir) |
-| `InvalidRequest` | Sorğu qurularkən klient kodundakı səhv: kodlanmamış path, doldurulmamış `{placeholder}`, yad host |
-| `RequestFailed` | Şəbəkə xətası, və ya 400+ status kodu — `->request` və `->response` üzərində detallar |
-| `MissingConfiguration` | Məcburi environment dəyişəni yoxdur |
+| Exception              | Nə vaxt                                                                                           |
+| :--------------------- | :------------------------------------------------------------------------------------------------ |
+| `ValidationFailed`     | DTO validasiyası uğursuz (sorğu göndərilmir)                                                      |
+| `InvalidRequest`       | Sorğu qurularkən klient kodundakı səhv: kodlanmamış path, doldurulmamış `{placeholder}`, yad host |
+| `RequestFailed`        | Şəbəkə xətası, və ya 400+ status kodu — `->request` və `->response` üzərində detallar             |
+| `MissingConfiguration` | Məcburi environment dəyişəni yoxdur                                                               |
 
 Hamısı `Integrify\Exception\IntegrifyException` interfeysini implement edir, ona görə
 kitabxanadan gələn hər şeyi bir yerdə tutmaq mümkündür.

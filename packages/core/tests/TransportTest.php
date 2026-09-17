@@ -125,8 +125,11 @@ final class TransportTest extends TestCase
             $transport->send($request);
             $this->fail('Expected a RequestFailed exception.');
         } catch (RequestFailed $failure) {
-            $this->assertSame(503, $failure->response?->status);
-            $this->assertSame('gateway down', $failure->response?->body);
+            // `assertNotNull()` PHPStan üçün də narrowing edir (`@phpstan-assert !null`),
+            // ona görə aşağıda `?->` lazım deyil.
+            $this->assertNotNull($failure->response);
+            $this->assertSame(503, $failure->response->status);
+            $this->assertSame('gateway down', $failure->response->body);
             $this->assertSame($request, $failure->request);
             $this->assertStringContainsString('503', $failure->getMessage());
         }

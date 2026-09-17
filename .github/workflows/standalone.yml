@@ -1,0 +1,110 @@
+name: Standalone install
+
+# The monorepo autoloads every package from one root `vendor/`, which hides the
+# packaging bug that bites hardest after publishing: a package that USES a class it
+# never DECLARED a dependency on. Locally the root autoloader resolves it and the tests
+# pass; published, the class is simply not there and the user gets
+# `Class "Integrify\Client" not found`.
+#
+# This job installs each package ALONE — only its own composer.json decides what lands
+# in vendor/ — and runs its tests against that autoloader. It is the only place the
+# mistake shows up before a user finds it.
+#
+# The package list comes from `bin/packages.php` — nothing here names a package.
+#
+# It also catches the second packaging trap: `integrify/core` requires the *virtual*
+# packages `psr/http-client-implementation` and `psr/http-factory-implementation`, so
+# every package depending on core must pull a real implementation into its own
+# require-dev or the standalone install cannot resolve at all.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: standalone-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # The package list comes from `bin/packages.php`, so adding an integration needs
+  # no edit to this file.
+  discover:
+    name: Discover packages
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.d.outputs.packages }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          tools: none
+
+      - id: d
+        run: |
+          set -euo pipefail
+          PACKAGES="$(php bin/packages.php --json)"
+          echo "Found: $PACKAGES"
+          echo "packages=$PACKAGES" >> "$GITHUB_OUTPUT"
+
+  standalone:
+    name: "Install ${{ matrix.package.directory }} on its own"
+    needs: discover
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.discover.outputs.packages) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          # The floor from composer.json. If it works here it works everywhere above.
+          php-version: '8.2'
+          extensions: mbstring, json
+          coverage: none
+          tools: composer:v2
+
+      - name: Point siblings at their local directories
+        env:
+          PACKAGES: ${{ needs.discover.outputs.packages }}
+          SELF: ${{ matrix.package.directory }}
+        working-directory: packages/${{ matrix.package.directory }}
+        run: |
+          set -euo pipefail
+
+          # Siblings are not on Packagist yet (or not at this commit), so resolve them
+          # from disk. `options.versions` pins each one to a version that satisfies the
+          # `^0.1` constraints — a path repository has no tag to derive one from.
+          #
+          # Everything else still comes from Packagist, which is the whole point: if this
+          # package forgot to require something, the install fails right here.
+          for sibling in $(jq -r '.[].directory' <<< "$PACKAGES"); do
+            [ "$sibling" = "$SELF" ] && continue
+            composer config "repositories.$sibling" \
+              "{\"type\":\"path\",\"url\":\"../$sibling\",\"options\":{\"versions\":{\"integrify/$sibling\":\"0.1.0\"}}}"
+          done
+
+      - name: Install
+        working-directory: packages/${{ matrix.package.directory }}
+        run: composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Its own tests, against its own autoloader
+        working-directory: packages/${{ matrix.package.directory }}
+        run: vendor/bin/phpunit --bootstrap vendor/autoload.php --display-warnings tests
+
+      - name: Every import resolves through this package's own autoloader
+        working-directory: packages/${{ matrix.package.directory }}
+        run: php ../../bin/check-imports.php

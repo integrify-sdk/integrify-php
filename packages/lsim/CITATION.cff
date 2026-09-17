@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: Integrify-Core (PHP)
+title: Integrify-LSIM (PHP)
 message: >-
   If you use this software, please cite it using the
   metadata from this file.
@@ -8,14 +8,16 @@ authors:
   - given-names: Miradil
     family-names: Zeynalli
     email: miradil.zeynalli@gmail.com
-repository-code: 'https://github.com/integrify-sdk/integrify-php/tree/main/packages/core'
+repository-code: 'https://github.com/integrify-sdk/integrify-php/tree/main/packages/lsim'
 url: 'https://integrify.mmzeynalli.dev/'
 abstract: >-
-  Integrify is a request library that eases API integrations. This is the core
-  library used by the other Integrify PHP packages.
+  Integrify is a request library that eases API integrations. This package wraps the
+  LSIM SMS API — single and bulk sending, delivery reports and balance.
 keywords:
   - integrify
-  - integrify-core
+  - integrify-lsim
+  - lsim
+  - sms
   - php
 license: MIT
 version: 0.1.0

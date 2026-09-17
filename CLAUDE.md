@@ -50,24 +50,83 @@ packages/<name>/
     └── <Name>ConfigTest.php
 ```
 
-Then wire it up in three places:
+Then run **one command**:
 
-1. Root `composer.json` — `autoload.psr-4` and `autoload-dev.psr-4`. (No `replace`:
-   the root is `"type": "project"` and is never published.)
-2. `phpunit.xml.dist` — a new `<testsuite>` and a `<source><include>` directory.
-3. `phpstan.neon.dist` — the `paths` list.
+```
+composer sync-packages
+```
+
+Nothing else is wired by hand. `bin/packages.php` discovers packages from
+`packages/*/composer.json` and is the single source of truth:
+
+| Consumer | How it picks the package up |
+| :--- | :--- |
+| Root `composer.json` autoload | `composer sync-packages` rewrites it **and dumps the autoloader**; `composer check-packages` fails if either drifts |
+| `phpunit.xml.dist` | `<directory>packages/*/tests</directory>` — PHPUnit resolves `*` itself |
+| `phpstan.neon.dist` | `paths: [packages, bin]` — the whole directory (PHPStan does **not** support `*` in `paths`) |
+| `publish.yml` split matrix | `fromJSON` of `php bin/packages.php --json` |
+| `publish.yml` tag filter | `'*-[0-9]*'` — matches any `<package>-<version>` |
+| `standalone.yml` matrix | the same JSON |
+
+The convention that makes discovery work — all three must agree:
+
+```
+packages/lsim/  ->  integrify/lsim  ->  Integrify-SDK/integrify-php-lsim
+```
+
+`bin/packages.php --check` enforces it. It compares three things: `packages/` on disk,
+the root `composer.json` autoload map, and — when `vendor/` exists — the *generated*
+`vendor/composer/autoload_psr4.php`. The last one matters because `composer.json` can be
+perfectly correct while the generated map is stale, which reads as "Class not found"
+rather than as a configuration problem. To break the convention deliberately, use that
+package's own manifest:
+
+```json
+"extra": {"integrify": {"mirror": "other-name", "publish": false}}
+```
+
+**The package's own `require-dev` must include a PSR-18 client and a PSR-17 factory**
+(`guzzlehttp/guzzle`, `nyholm/psr7`). `integrify/core` requires the *virtual* packages
+`psr/http-client-implementation` and `psr/http-factory-implementation`, so a standalone
+install of anything depending on core cannot resolve without real ones.
+
+The one manual step that remains is outside the repo: **create the mirror repository**
+`integrify-php-<name>` on GitHub and submit it to Packagist once. See `PUBLISHING.md`.
 
 ## Commands
 
 ```
-composer install        # dependencies
-composer format         # php-cs-fixer fix
-composer lint           # php-cs-fixer fix --dry-run --diff
-composer type-check     # phpstan analyse (level max)
-composer test           # phpunit
-composer coverage       # phpunit with HTML + text coverage
-composer all            # format + type-check + test
+composer install         # dependencies
+composer packages        # list the packages and their mirrors
+composer sync-packages   # rewrite the root autoload map from packages/
+composer check-packages  # verify it is in sync (CI runs this)
+composer format          # php-cs-fixer fix
+composer lint            # php-cs-fixer fix --dry-run --diff
+composer type-check      # phpstan analyse (level max)
+composer test            # phpunit
+composer test -- packages/lsim/tests    # one package
+composer coverage        # phpunit with HTML + text coverage
+composer all             # check-packages + format + type-check + test
 ```
+
+Hooks mirror those scripts (`.pre-commit-config.yaml`), so there is one definition of
+"what lint means":
+
+```
+pre-commit install
+pre-commit install --hook-type pre-push   # `test` and `secure` run on push
+pre-commit run --all-files
+```
+
+Two non-obvious things in that config, both found by running it rather than reading it:
+
+- `check-xml` needs **both** `files: \.xml(\.dist)?$` and `types: [file]`. `identify`
+  gives a `.dist` file no tags at all, and the upstream hook declares `types: [xml]`,
+  which is ANDed with `files` — so `files` alone matches nothing and the hook silently
+  skips `phpunit.xml.dist`, the one file it exists to protect.
+- `format` passes `--path-mode=intersection` so the fixer's own finder stays
+  authoritative; without it, a staged file outside `packages/` and `bin/` would be
+  reformatted because an explicit path overrides the finder.
 
 ## Writing a client
 
@@ -161,6 +220,19 @@ a few things are deliberate and should not be "simplified" away:
   byte count cannot settle it. Lengths are **character** counts — the byte check is only
   a fast path, never the answer. Tests cover this.
 
+## The monorepo's own trap
+
+Every package is autoloaded from one root `vendor/`, so a package can use a class it
+never declared a dependency on and the tests still pass. Published, that class is not in
+the user's `vendor/` and they get `Class "Integrify\Client" not found`.
+
+Two guards, and neither is optional when adding a package:
+
+- `bin/check-imports.php` — run from a package directory after a standalone install, it
+  asserts that every `use` in `src/` resolves through that package's own autoloader.
+- The `standalone` CI job installs each package alone and runs its tests against the
+  `vendor/` its own manifest produced.
+
 ## Errors
 
 Everything the library throws implements `Integrify\Exception\IntegrifyException`:
@@ -228,7 +300,9 @@ version from the Git tag. So (a) `composer.json` must carry **no** `version` fie
 (b) the monorepo cannot publish two packages by itself — `.github/workflows/publish.yml`
 subtree-splits `packages/*` into read-only mirror repositories that Packagist watches.
 
-Publishing is tag-driven: `<package>-<version>` (e.g. `core-0.1.0`, `epoint-0.1.0`).
+Publishing is tag-driven: `<package>-<version>` (e.g. `core-0.1.0`, `lsim-0.1.0`). The
+workflow discovers packages rather than listing them, so a new integration is publishable
+the moment its directory exists and its mirror repo is created.
 Add the `CHANGELOG.md` entry first — the workflow refuses to publish a version the
 changelog does not mention, which is this repo's stand-in for Python's "tag matches
 `pyproject.toml`" check. The tag is renamed on the way into the mirror

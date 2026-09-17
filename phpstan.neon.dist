@@ -1,13 +1,11 @@
 parameters:
     level: max
+    # `packages` bütöv katalogdur, ona görə yeni paket avtomatik daxil olur.
+    # (PHPStan `paths`-də `*` dəstəkləmir — yoxlanılıb.)
     paths:
-        - packages/core/src
-        - packages/core/tests
+        - packages
+        - bin
+    excludePaths:
+        analyseAndScan:
+            - packages/*/vendor
     treatPhpDocTypesAsCertain: false
-    ignoreErrors:
-        # `describeProperty()` intersection/DNF tiplərini oxuya bilmir, ona görə belə
-        # property-lər üçün çevirmə edilmir və konstruktor `TypeError` ata bilir.
-        # PHPStan tiplərin uyğun gəldiyini fərz etdiyi üçün catch-i "ölü" sayır.
-        -
-            identifier: catch.neverThrown
-            path: packages/core/src/Dto/Mapper.php

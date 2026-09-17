@@ -1,6 +1,6 @@
 {
     "name": "integrify/monorepo",
-    "description": "Development workspace for the Integrify PHP packages. Not published \u2014 the packages under packages/* are published individually via subtree splits (see PUBLISHING.md).",
+    "description": "Development workspace for the Integrify PHP packages. Not published — the packages under packages/* are published individually via subtree splits (see PUBLISHING.md).",
     "type": "project",
     "keywords": [
         "integrify",
@@ -34,27 +34,36 @@
         "friendsofphp/php-cs-fixer": "^3.82",
         "guzzlehttp/guzzle": "^7.9",
         "nyholm/psr7": "^1.8",
-        "phpstan/phpstan": "^2.0",
+        "phpstan/phpstan": "^2.2",
         "phpunit/phpunit": "^11.4"
     },
     "autoload": {
         "psr-4": {
-            "Integrify\\": "packages/core/src/"
+            "Integrify\\": "packages/core/src/",
+            "Integrify\\Lsim\\": "packages/lsim/src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
+            "Integrify\\Lsim\\Tests\\": "packages/lsim/tests/",
             "Integrify\\Tests\\": "packages/core/tests/"
         }
     },
     "scripts": {
-        "format": "php-cs-fixer fix",
-        "lint": "php-cs-fixer fix --dry-run --diff",
+        "format": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
+        "lint": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff",
         "type-check": "phpstan analyse",
         "test": "phpunit",
         "coverage": "phpunit --coverage-html coverage --coverage-text",
+        "packages": "@php bin/packages.php",
+        "sync-packages": [
+            "@php bin/packages.php --sync",
+            "@composer dump-autoload"
+        ],
+        "check-packages": "@php bin/packages.php --check",
         "secure": "composer audit",
         "all": [
+            "@check-packages",
             "@format",
             "@type-check",
             "@test"
@@ -65,9 +74,12 @@
         "lint": "Check code style without writing (PHP-CS-Fixer)",
         "type-check": "Static analysis (PHPStan, level max)",
         "test": "Run every package's test suite (PHPUnit)",
-        "coverage": "Run tests and emit an HTML + text coverage report",
+        "coverage": "Run tests with an HTML + text coverage report (needs Xdebug or PCOV)",
+        "packages": "List the packages under packages/ and how they map to mirrors",
+        "sync-packages": "Rewrite the root autoload map from packages/ (run after adding one)",
+        "check-packages": "Verify the root autoload map matches packages/",
         "secure": "Audit dependencies for known advisories",
-        "all": "format + type-check + test"
+        "all": "check-packages + format + type-check + test"
     },
     "config": {
         "sort-packages": true,

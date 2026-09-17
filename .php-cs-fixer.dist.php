@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 $finder = PhpCsFixer\Finder::create()
-    ->in([__DIR__ . '/packages'])
+    ->in([__DIR__ . '/packages', __DIR__ . '/bin'])
     ->exclude(['vendor']);
 
 return (new PhpCsFixer\Config())

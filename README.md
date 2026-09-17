@@ -233,9 +233,9 @@ fallback cavab verin: `new RecordingTransport(Response::json([]))`.
 | Paket / Package | Composer | Status | Python qarşılığı |
 | :--- | :--- | :---: | :--- |
 | [`core`](packages/core) | `integrify/core` | ✅ | [`integrify-core`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/core) |
+| [`lsim`](packages/lsim) | `integrify/lsim` | ✅ | [`integrify-lsim`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/lsim) |
 | EPoint | `integrify/epoint` | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-epoint`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/epoint) |
 | KapitalBank | `integrify/kapitalbank` | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-kapitalbank`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/kapitalbank) |
-| LSIM | `integrify/lsim` | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-lsim`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/lsim) |
 | Posta Güvercini | `integrify/postaguvercini` | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-postaguvercini`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/postaguvercini) |
 | Azericard | `integrify/azericard` | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-azericard`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/azericard) |
 | Clopos | `integrify/clopos` | ![loading](https://raw.githubusercontent.com/integrify-sdk/integrify-python/main/docs/assets/spinner-solid.svg) | [`integrify-clopos`](https://github.com/Integrify-SDK/integrify-python/tree/main/packages/clopos) |
@@ -382,13 +382,34 @@ See the table in the [Azerbaijani section](#dəstəklənən-paketlər) — it is
 ### Development
 
 ```console
-composer install       # dependencies
-composer format        # fix code style (PHP-CS-Fixer)
-composer lint          # check code style
-composer type-check    # static analysis (PHPStan, level max)
-composer test          # run the test suite (PHPUnit)
-composer coverage      # tests + coverage report
-composer all           # format + type-check + test
+composer install         # dependencies
+composer packages        # list the packages and their mirrors
+composer sync-packages   # rewrite the root autoload map after adding a package
+composer format          # fix code style (PHP-CS-Fixer)
+composer lint            # check code style
+composer type-check      # static analysis (PHPStan, level max)
+composer test            # run the test suite (PHPUnit)
+composer coverage        # tests + coverage report (needs Xdebug or PCOV)
+composer all             # check-packages + format + type-check + test
+```
+
+#### Pre-commit hooks
+
+The same [pre-commit](https://pre-commit.com) setup as `integrify-python`, with
+`composer` scripts in place of `just` tasks, so the hooks and CI can never disagree:
+
+```console
+pip install pre-commit
+pre-commit install
+pre-commit install --hook-type pre-push
+```
+
+On **commit**: markup checks (XML, YAML, JSON), `check-packages`, `format` on the staged
+PHP files, and `type-check`. On **push**: `test` and `secure`, which are slower and hit
+the network.
+
+```console
+pre-commit run --all-files   # run everything once, without committing
 ```
 
 ### Troubleshooting
