@@ -5,7 +5,7 @@ və çeklər.
 
 **Composer**: `integrify/clopos`
 **Kod**: [https://github.com/integrify-sdk/integrify-php/tree/main/packages/clopos](https://github.com/integrify-sdk/integrify-php/tree/main/packages/clopos)
-**Sənədlər**: [https://integrify.mmzeynalli.dev/integrations/clopos](https://integrify.mmzeynalli.dev/integrations/clopos)
+**Sənədlər**: [https://integrify-php.mmzeynalli.dev/integrations/clopos/](https://integrify-php.mmzeynalli.dev/integrations/clopos/)
 **Rəsmi sənədlər**: [https://developer.clopos.com](https://developer.clopos.com)
 **Python qarşılığı**: [`integrify-clopos`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/clopos)
 

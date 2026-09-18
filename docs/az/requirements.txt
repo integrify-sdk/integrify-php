@@ -1,0 +1,3 @@
+# Sənədlərin qurulması üçün. `composer docs` bunlardan asılı deyil — o, yalnız
+# markdown yazır; bunlar markdown-ı sayta çevirir.
+mkdocs-material==9.5.49

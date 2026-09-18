@@ -8,6 +8,11 @@ repos:
         files: \.xml(\.dist)?$
         types: [file]
       - id: check-yaml
+        exclude: ^docs/az/mkdocs\.yml$
+      - id: check-yaml
+        name: check yaml (mkdocs)
+        files: ^docs/az/mkdocs\.yml$
+        args: [--unsafe]
       - id: check-json
       - id: check-merge-conflict
       - id: check-case-conflict
@@ -32,6 +37,13 @@ repos:
         language: system
         files: \.php$
         require_serial: true
+
+      - id: check-docs
+        name: check-docs
+        entry: composer run check-docs
+        language: system
+        files: (^packages/.*\.php$|^bin/docs\.php$)
+        pass_filenames: false
 
       - id: type-check
         name: type-check

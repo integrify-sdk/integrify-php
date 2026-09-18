@@ -16,7 +16,7 @@
 
 ---
 
-**Dokumentasiya**: [https://integrify.mmzeynalli.dev/integrations/lsim](https://integrify.mmzeynalli.dev/integrations/lsim)
+**Dokumentasiya**: [https://integrify-php.mmzeynalli.dev/integrations/lsim/](https://integrify-php.mmzeynalli.dev/integrations/lsim/)
 
 **Kod**: [https://github.com/integrify-sdk/integrify-php/tree/main/packages/lsim](https://github.com/integrify-sdk/integrify-php/tree/main/packages/lsim)
 

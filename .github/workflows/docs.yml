@@ -1,0 +1,62 @@
+# Sənədlərin yoxlanması.
+#
+# YAYIMLAMAQ BU İŞİN İŞİ DEYİL — onu Netlify edir (repo kökündəki `netlify.toml`).
+# Netlify `main`-ə hər push-dan sonra saytı özü qurur və hər PR üçün ayrıca
+# "deploy preview" URL-i verir.
+#
+# Bəs onda bu fayl nə üçündür? İki səbəb:
+#
+#   1. `check-docs` — sayt qurulan MARKDOWN repoda saxlanılır, mənbədən hər dəfə
+#      yenidən yaradılmır. Yəni kimsə docblock-u dəyişib `composer docs` qaçırmasa,
+#      Netlify köhnə mətni tam uğurla yayımlayacaq. Bunu yalnız bu yoxlama tutur.
+#
+#   2. `mkdocs build --strict` — Netlify də eyni əmri qaçırır, amma onun uğursuzluğu
+#      GitHub-da commit-in yanında qırmızı işarə qoymur: sayt sadəcə köhnə versiyada
+#      qalır və heç nə demir. Burada qaçırmaq PR müəllifinə dərhal cavab verir.
+name: docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      # `netlify.toml`-dakı PYTHON_VERSION ilə eyni olmalıdır.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: docs/az/requirements.txt
+
+      - name: Install MkDocs
+        run: pip install -r docs/az/requirements.txt
+
+      # `bin/docs.php` `vendor/` olmadan da işləyir — öz autoloader-ini qurur,
+      # ona görə burada `composer install` yoxdur.
+      - name: Check the API reference is in sync
+        run: composer run check-docs
+
+      # Netlify-ın qaçırdığı əmrin EYNİSİ, eyni işçi qovluqdan. Fərqlənsələr,
+      # bu yoxlamanın mənası qalmır.
+      - name: Build
+        working-directory: docs/az
+        run: mkdocs build --strict

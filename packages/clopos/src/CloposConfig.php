@@ -92,11 +92,13 @@ final readonly class CloposConfig
     private function require(?string $value, string $variable): string
     {
         if ($value === null || $value === '') {
-            throw new MissingConfiguration(sprintf(
-                'Clopos authentication needs %s. Pass it to %s, or set the environment variable.',
+            // `MissingConfiguration` mesajı özü "Environment variable X is not set."
+            // yazır, ona görə birinci arqument **dəyişənin adıdır**, cümlə deyil.
+            throw new MissingConfiguration(
                 $variable,
-                self::class,
-            ));
+                'Clopos needs it to authenticate; pass it to ' . self::class
+                . ' directly if you do not use environment variables.',
+            );
         }
 
         return $value;

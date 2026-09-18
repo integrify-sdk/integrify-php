@@ -5,7 +5,7 @@ kart yaddaşı, clearing, ləğv, geri qaytarma və saxlanılmış kartla ödən
 
 **Composer**: `integrify/kapitalbank`
 **Kod**: [https://github.com/integrify-sdk/integrify-php/tree/main/packages/kapitalbank](https://github.com/integrify-sdk/integrify-php/tree/main/packages/kapitalbank)
-**Sənədlər**: [https://integrify.mmzeynalli.dev/integrations/kapitalbank](https://integrify.mmzeynalli.dev/integrations/kapitalbank)
+**Sənədlər**: [https://integrify-php.mmzeynalli.dev/integrations/kapitalbank/](https://integrify-php.mmzeynalli.dev/integrations/kapitalbank/)
 **Python qarşılığı**: [`integrify-kapitalbank`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/kapitalbank)
 
 > [!IMPORTANT]

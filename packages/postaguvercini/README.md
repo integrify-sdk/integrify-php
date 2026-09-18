@@ -5,7 +5,7 @@ tək və çoxlu SMS göndərilməsi, çatdırılma hesabatı və balans sorğusu
 
 **Composer**: `integrify/postaguvercini`
 **Kod**: [https://github.com/integrify-sdk/integrify-php/tree/main/packages/postaguvercini](https://github.com/integrify-sdk/integrify-php/tree/main/packages/postaguvercini)
-**Sənədlər**: [https://integrify.mmzeynalli.dev/integrations/postaguvercini](https://integrify.mmzeynalli.dev/integrations/postaguvercini)
+**Sənədlər**: [https://integrify-php.mmzeynalli.dev/integrations/postaguvercini/](https://integrify-php.mmzeynalli.dev/integrations/postaguvercini/)
 **Python qarşılığı**: [`integrify-postaguvercini`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/postaguvercini)
 
 > [!IMPORTANT]

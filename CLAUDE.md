@@ -326,6 +326,59 @@ to widen their constraint.
 Changing `packages/core` means a core release plus a dependency floor bump in any package
 that relies on the new behaviour.
 
+## Docs
+
+`docs/az/` is an MkDocs + Material site, the same theme and markdown extensions as the
+Python repos so the two sites read alike. It is **not** a hand-written API reference:
+
+```
+composer docs         # rebuild docs/az/docs/integrations/** from the source
+composer check-docs   # fail if the committed pages have drifted (CI, pre-commit, `all`)
+cd docs/az && mkdocs serve
+```
+
+`mkdocs` must run **from `docs/az/`** — `pymdownx.snippets`' `base_path: ../..` and the
+Python repos' `paths: ../../src` both resolve against the working directory, not against
+the config file.
+
+`bin/docs.php` reflects over every package `bin/packages.php` discovers and writes one
+page per group: client, config, request DTOs, response DTOs, enums, exceptions, and a
+catch-all for the rest. Two things are worth knowing about why it exists:
+
+- **mkdocstrings has no PHP handler** (C, Crystal, GitHub Actions, Python, MATLAB,
+  TypeScript, VBA and shell — that is the list), so the `::: module.Class` mechanism the
+  Python site is built on has no counterpart here.
+- Generic PHP tools would document `public ?string $trackingNo` but not that it goes on
+  the wire as `trackinG_NO`. That fact lives in `#[Field]` and only reflection sees it —
+  `griffe_pydantic` does the same job on the Python side. It is the single most useful
+  column in the generated tables, so the generator exists to produce it.
+
+A package's **index page is its README**, pulled in with `--8<-- "packages/<name>/README.md"`.
+There is no second copy to keep current. Two consequences: a README link has to be an
+absolute URL, because it is rendered from a different directory; and `check_paths: true`
+is set so a missing README fails the build instead of rendering an empty page.
+
+Docblock links like `` [`Foo`](Foo.php) `` are rewritten to the right page anchor when
+`Foo` is documented, and reduced to plain text when it is not — a relative link to a
+`.php` file is correct in an IDE and broken on a website, and `mkdocs --strict` refuses
+to publish either mistake.
+
+### Publishing
+
+The site is on **Netlify** at <https://integrify-php.mmzeynalli.dev>, built from `main` by
+the root `netlify.toml`. That file sets `base = "docs/az"`, which is how the
+working-directory rule above is satisfied on the build machine; every other path in it is
+relative to that base, so `publish = "site"` means `docs/az/site`. Netlify installs
+`docs/az/requirements.txt` on its own. Every PR also gets its own deploy preview URL.
+
+`.github/workflows/docs.yml` does **not** publish anything. It runs `check-docs` and the
+same strict build, because a Netlify failure leaves the previous site up without marking
+the commit red, and because generated markdown is committed — nothing else would notice
+if someone edited a docblock and skipped `composer docs`.
+
+Changing the domain means changing `site_url` in `mkdocs.yml` as well; it feeds the
+canonical tags and `sitemap.xml`, which are wrong silently rather than loudly.
+
 ## Onboarding
 
 `PHP-PRIMER.md` explains this codebase for contributors who know Python but not PHP.

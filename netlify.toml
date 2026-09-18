@@ -1,0 +1,19 @@
+[build]
+base = "docs/az"
+publish = "site"
+command = "mkdocs build --strict"
+
+[build.environment]
+PYTHON_VERSION = "3.12"
+
+[[headers]]
+for = "/assets/javascripts/*"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/assets/stylesheets/*"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"

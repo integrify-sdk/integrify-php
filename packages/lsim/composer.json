@@ -10,7 +10,7 @@
         "integration",
         "azerbaijan"
     ],
-    "homepage": "https://integrify.mmzeynalli.dev",
+    "homepage": "https://integrify-php.mmzeynalli.dev",
     "license": "MIT",
     "authors": [
         {
@@ -21,7 +21,7 @@
     "support": {
         "issues": "https://github.com/integrify-sdk/integrify-php/issues",
         "source": "https://github.com/integrify-sdk/integrify-php/tree/main/packages/lsim",
-        "docs": "https://integrify.mmzeynalli.dev/integrations/lsim"
+        "docs": "https://integrify-php.mmzeynalli.dev/integrations/lsim/"
     },
     "require": {
         "php": ">=8.2",

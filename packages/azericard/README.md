@@ -5,7 +5,7 @@ pul köçürmələri (MT).
 
 **Composer**: `integrify/azericard`
 **Kod**: [https://github.com/integrify-sdk/integrify-php/tree/main/packages/azericard](https://github.com/integrify-sdk/integrify-php/tree/main/packages/azericard)
-**Sənədlər**: [https://integrify.mmzeynalli.dev/integrations/azericard](https://integrify.mmzeynalli.dev/integrations/azericard)
+**Sənədlər**: [https://integrify-php.mmzeynalli.dev/integrations/azericard/](https://integrify-php.mmzeynalli.dev/integrations/azericard/)
 **Python qarşılığı**: [`integrify-azericard`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/azericard)
 
 > [!IMPORTANT]

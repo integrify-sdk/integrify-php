@@ -5,7 +5,7 @@ payout, refund və bölünmüş ödənişlər.
 
 **Composer**: `integrify/epoint`
 **Kod**: [https://github.com/integrify-sdk/integrify-php/tree/main/packages/epoint](https://github.com/integrify-sdk/integrify-php/tree/main/packages/epoint)
-**Sənədlər**: [https://integrify.mmzeynalli.dev/integrations/epoint](https://integrify.mmzeynalli.dev/integrations/epoint)
+**Sənədlər**: [https://integrify-php.mmzeynalli.dev/integrations/epoint/](https://integrify-php.mmzeynalli.dev/integrations/epoint/)
 **Python qarşılığı**: [`integrify-epoint`](https://github.com/integrify-sdk/integrify-python/tree/main/packages/epoint)
 
 > [!IMPORTANT]

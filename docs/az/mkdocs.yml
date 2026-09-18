@@ -1,0 +1,164 @@
+# Integrify (PHP) sənədləri.
+#
+# Python tərəfdəki konfiqurasiya ilə eyni tema və eyni markdown genişlənmələri —
+# iki sayt eyni görünsün deyə. Fərq bir yerdədir: `mkdocstrings` yoxdur, çünki
+# onun PHP handler-i yoxdur (rəsmi siyahı: C, Crystal, GitHub Actions, Python,
+# MATLAB, TypeScript, VBA, shell). API referansını `bin/docs.php` qurur.
+#
+# Yerli işə salmaq — `mkdocs` **bu qovluqdan** çağırılmalıdır, çünki
+# `pymdownx.snippets`-in `base_path`-i işçi qovluğa nisbətəndir, konfiqurasiya
+# faylına yox (Python repolarındakı `paths: ../../src` də eyni qaydadadır):
+#
+#     pip install -r docs/az/requirements.txt
+#     composer docs
+#     cd docs/az && mkdocs serve
+#
+# Yayımlanma Netlify-dadır: repo kökündəki `netlify.toml` `base`-i `docs/az` qoyur,
+# yəni build eyni işçi qovluqdan qaçır. Sayt yalnız `main`-ə push-dan sonra dəyişir;
+# PR-lər öz müvəqqəti URL-ində "deploy preview" alır.
+site_name: Integrify (PHP)
+site_description: Azərbaycan servislərinin API inteqrasiyaları üçün PHP kitabxanaları.
+site_author: Miradil Zeynalli
+site_url: https://integrify-php.mmzeynalli.dev/
+copyright: Copyright © 2026 Miradil Zeynalli. Bütün hüquqlar qorunur.
+
+repo_name: integrify-sdk/integrify-php
+repo_url: https://github.com/integrify-sdk/integrify-php
+edit_uri: edit/main/docs/az/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  language: az
+  logo: assets/logo.svg
+  favicon: assets/favicon.ico
+  features:
+    - content.action.edit
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+    - content.tooltips
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/lightbulb
+        name: Qaranlıq rejimə keç
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/lightbulb-outline
+        name: İşıqlı rejimə keç
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      line_spans: __span
+  - pymdownx.inlinehilite
+  # Paketlərin giriş səhifəsi README-nin özüdür: mətn iki yerdə saxlanılmır.
+  # `base_path` repo kökünə baxır, `check_paths` isə itmiş faylı xəta edir —
+  # əks halda səhifə səssizcə boş çıxardı.
+  - pymdownx.snippets:
+      base_path:
+        - ../..
+      check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+# >>> bin/docs.php
+nav:
+  - Ana səhifə: index.md
+  - integrify/azericard:
+      - integrations/azericard/index.md
+      - API Referansı:
+          - Klient: integrations/azericard/api-reference/client.md
+          - Konfiqurasiya: integrations/azericard/api-reference/config.md
+          - Cavab DTO-ları: integrations/azericard/api-reference/response.md
+          - Enum-lar: integrations/azericard/api-reference/enums.md
+          - Xətalar: integrations/azericard/api-reference/errors.md
+          - Digər obyektlər: integrations/azericard/api-reference/other.md
+  - integrify/clopos:
+      - integrations/clopos/index.md
+      - API Referansı:
+          - Klient: integrations/clopos/api-reference/client.md
+          - Konfiqurasiya: integrations/clopos/api-reference/config.md
+          - Sorğu DTO-ları: integrations/clopos/api-reference/request.md
+          - Cavab DTO-ları: integrations/clopos/api-reference/response.md
+          - Enum-lar: integrations/clopos/api-reference/enums.md
+          - Xətalar: integrations/clopos/api-reference/errors.md
+          - Digər obyektlər: integrations/clopos/api-reference/other.md
+  - integrify/core:
+      - integrations/core/index.md
+      - API Referansı:
+          - Klient: integrations/core/api-reference/client.md
+          - Enum-lar: integrations/core/api-reference/enums.md
+          - Xətalar: integrations/core/api-reference/errors.md
+          - Digər obyektlər: integrations/core/api-reference/other.md
+  - integrify/epoint:
+      - integrations/epoint/index.md
+      - API Referansı:
+          - Klient: integrations/epoint/api-reference/client.md
+          - Konfiqurasiya: integrations/epoint/api-reference/config.md
+          - Sorğu DTO-ları: integrations/epoint/api-reference/request.md
+          - Cavab DTO-ları: integrations/epoint/api-reference/response.md
+          - Enum-lar: integrations/epoint/api-reference/enums.md
+          - Xətalar: integrations/epoint/api-reference/errors.md
+          - Digər obyektlər: integrations/epoint/api-reference/other.md
+  - integrify/kapitalbank:
+      - integrations/kapitalbank/index.md
+      - API Referansı:
+          - Klient: integrations/kapitalbank/api-reference/client.md
+          - Konfiqurasiya: integrations/kapitalbank/api-reference/config.md
+          - Sorğu DTO-ları: integrations/kapitalbank/api-reference/request.md
+          - Cavab DTO-ları: integrations/kapitalbank/api-reference/response.md
+          - Enum-lar: integrations/kapitalbank/api-reference/enums.md
+          - Xətalar: integrations/kapitalbank/api-reference/errors.md
+          - Digər obyektlər: integrations/kapitalbank/api-reference/other.md
+  - integrify/lsim:
+      - integrations/lsim/index.md
+      - API Referansı:
+          - Klient: integrations/lsim/api-reference/client.md
+          - Konfiqurasiya: integrations/lsim/api-reference/config.md
+          - Cavab DTO-ları: integrations/lsim/api-reference/response.md
+          - Enum-lar: integrations/lsim/api-reference/enums.md
+  - integrify/postaguvercini:
+      - integrations/postaguvercini/index.md
+      - API Referansı:
+          - Klient: integrations/postaguvercini/api-reference/client.md
+          - Konfiqurasiya: integrations/postaguvercini/api-reference/config.md
+          - Sorğu DTO-ları: integrations/postaguvercini/api-reference/request.md
+          - Cavab DTO-ları: integrations/postaguvercini/api-reference/response.md
+          - Enum-lar: integrations/postaguvercini/api-reference/enums.md
+# <<< bin/docs.php

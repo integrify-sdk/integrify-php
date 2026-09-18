@@ -16,7 +16,7 @@
 
 ---
 
-**Dokumentasiya**: [https://integrify.mmzeynalli.dev](https://integrify.mmzeynalli.dev)
+**Dokumentasiya**: [https://integrify-php.mmzeynalli.dev/integrations/core/](https://integrify-php.mmzeynalli.dev/integrations/core/)
 
 **Kod**: [https://github.com/integrify-sdk/integrify-php/tree/main/packages/core](https://github.com/integrify-sdk/integrify-php/tree/main/packages/core)
 
