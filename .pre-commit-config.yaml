@@ -1,46 +1,15 @@
-# Pre-commit hooks for integrify-php.
-#
-# Same tool and the same shape as integrify-python's config, with `composer` in
-# place of `just`. Every PHP check delegates to a composer script, so there is one
-# definition of "what lint means" and the hooks cannot drift from CI.
-#
-# Install (both hook types — `test` and `secure` run on push, not on commit):
-#
-#     pip install pre-commit          # or: pipx install pre-commit
-#     pre-commit install
-#     pre-commit install --hook-type pre-push
-#
-# Run against everything once, without committing:
-#
-#     pre-commit run --all-files
-#
-# Requires `composer install` to have been run: every PHP hook needs vendor/bin.
-
-# A hook with no `stages:` runs at EVERY stage, so without this the whole suite
-# would run again on push. Anything that should also run on push says so explicitly.
 default_stages: [pre-commit]
 
 repos:
-  # --------------------------------------------------------------------------
-  # Markup. Cheap, and it catches the class of mistake that is invisible until a
-  # tool chokes on it: an unparseable phpunit.xml.dist, a broken workflow, a
-  # composer.json with a trailing comma.
-  # --------------------------------------------------------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
-      # Two overrides are needed for `phpunit.xml.dist`, the file this hook exists
-      # to protect. `identify` gives a `.dist` file NO tags, and the upstream hook
-      # declares `types: [xml]`, which is ANDed with `files` — so `files` alone
-      # silently matches nothing.
       - id: check-xml
         files: \.xml(\.dist)?$
         types: [file]
       - id: check-yaml
       - id: check-json
       - id: check-merge-conflict
-      # Windows here, Linux in CI: a file that differs only in case is a merge
-      # conflict waiting to happen.
       - id: check-case-conflict
       - id: end-of-file-fixer
         stages: [pre-commit]
@@ -48,15 +17,8 @@ repos:
         stages: [pre-commit]
         args: [--markdown-linebreak-ext=md]
 
-  # --------------------------------------------------------------------------
-  # PHP. Each hook is a composer script, so `composer all` and the hooks always
-  # agree.
-  # --------------------------------------------------------------------------
   - repo: local
     hooks:
-      # `packages/` on disk, the root autoload map and vendor/'s generated map
-      # must agree. Instant, and it turns "dozens of Class not found errors" into
-      # one actionable line.
       - id: check-packages
         name: check-packages
         entry: composer run check-packages
@@ -64,19 +26,13 @@ repos:
         files: (composer\.json$|^packages/)
         pass_filenames: false
 
-      # php-cs-fixer rewrites in place; pre-commit then fails the commit because
-      # the working tree changed, and you re-stage. `--path-mode=intersection`
-      # keeps the config's own finder authoritative, so passing filenames narrows
-      # the run rather than widening it.
       - id: format
         name: format
         entry: composer run format -- --path-mode=intersection
         language: system
         files: \.php$
+        require_serial: true
 
-      # PHPStan needs whole-project context to resolve classes, so it is not
-      # given the staged filenames — analysing one file in isolation reports
-      # things that are not true.
       - id: type-check
         name: type-check
         entry: composer run type-check
@@ -91,8 +47,6 @@ repos:
         stages: [pre-push]
         pass_filenames: false
 
-      # Hits the network, so it waits for a push rather than running on every
-      # commit.
       - id: secure
         name: secure
         entry: composer run secure
