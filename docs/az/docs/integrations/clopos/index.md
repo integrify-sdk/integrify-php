@@ -1,5 +1,5 @@
 ---
-title: integrify/clopos
+title: Clopos
 ---
 
 --8<-- "packages/clopos/README.md"

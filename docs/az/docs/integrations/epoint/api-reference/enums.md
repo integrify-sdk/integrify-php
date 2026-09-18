@@ -1,3 +1,7 @@
+---
+title: EPoint · Enum-lar
+---
+
 # Enum-lar
 
 ## Endpoint

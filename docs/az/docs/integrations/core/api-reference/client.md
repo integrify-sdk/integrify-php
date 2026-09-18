@@ -1,3 +1,7 @@
+---
+title: Core · Klient
+---
+
 # Client
 
 İnteqrasiya klientlərinin baza class-ı.

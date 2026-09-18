@@ -1,3 +1,7 @@
+---
+title: Core · Enum-lar
+---
+
 # Enum-lar
 
 ## NoMatch

@@ -1,3 +1,7 @@
+---
+title: EPoint · Klient
+---
+
 # EPointClient
 
 EPoint ödəniş şlüzü (`https://epoint.az`).

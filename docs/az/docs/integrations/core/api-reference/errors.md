@@ -1,3 +1,7 @@
+---
+title: Core · Xətalar
+---
+
 # Xətalar
 
 Hamısı `Integrify\Exception\IntegrifyException`-i implement edir.

@@ -353,6 +353,17 @@ catch-all for the rest. Two things are worth knowing about why it exists:
   `griffe_pydantic` does the same job on the Python side. It is the single most useful
   column in the generated tables, so the generator exists to produce it.
 
+**A page's sidebar label and its browser-tab title are not the same string.** MkDocs has one
+`page.title`, and a `nav:` label claims it — so qualifying the tab title by hand would drag the
+package name into every sidebar row. Material's `htmltitle` block checks `page.meta.title`
+first, so the generator emits front matter (`title: Azericard · Konfiqurasiya`) and leaves the
+nav label short. Without it, seven packages contribute seven pages called "Konfiqurasiya" and
+open tabs, bookmarks and search results can't be told apart.
+
+Package display names (`Kapital Bank`, `EPoint`) are parsed from each README's H1, so there is
+no second list of names to drift. `navigation.indexes` makes a package's README *be* its
+sidebar section instead of a child of it.
+
 A package's **index page is its README**, pulled in with `--8<-- "packages/<name>/README.md"`.
 There is no second copy to keep current. Two consequences: a README link has to be an
 absolute URL, because it is rendered from a different directory; and `check_paths: true`

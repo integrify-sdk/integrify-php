@@ -1,3 +1,7 @@
+---
+title: Kapital Bank · Digər obyektlər
+---
+
 # Digər obyektlər
 
 ## PmoResultCode

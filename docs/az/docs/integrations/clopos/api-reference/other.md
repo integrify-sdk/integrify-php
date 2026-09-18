@@ -1,3 +1,7 @@
+---
+title: Clopos · Digər obyektlər
+---
+
 # Digər obyektlər
 
 ## Page

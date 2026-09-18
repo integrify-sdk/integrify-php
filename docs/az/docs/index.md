@@ -1,7 +1,3 @@
----
-title: Integrify (PHP)
----
-
 # Integrify (PHP)
 
 Azərbaycan servislərinin API-lərini bir kiçik, ardıcıl klient abstraksiyası arxasında

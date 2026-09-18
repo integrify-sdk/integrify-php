@@ -1,3 +1,7 @@
+---
+title: Core · Digər obyektlər
+---
+
 # Digər obyektlər
 
 ## Field

@@ -1,3 +1,7 @@
+---
+title: Posta Güvercini · Enum-lar
+---
+
 # Enum-lar
 
 ## Endpoint

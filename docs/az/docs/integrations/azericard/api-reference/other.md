@@ -1,3 +1,7 @@
+---
+title: Azericard · Digər obyektlər
+---
+
 # Digər obyektlər
 
 ## Callback

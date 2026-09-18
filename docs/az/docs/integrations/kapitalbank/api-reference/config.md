@@ -1,3 +1,7 @@
+---
+title: Kapital Bank · Konfiqurasiya
+---
+
 # Konfiqurasiya
 
 `fromEnvironment()` adlandırılmış konstruktordur: dəyərlər bir dəfə, obyekt yaradılarkən oxunur — sorğu atılarkən yox.

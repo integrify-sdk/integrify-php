@@ -1,3 +1,7 @@
+---
+title: Azericard · Enum-lar
+---
+
 # Enum-lar
 
 ## Endpoint

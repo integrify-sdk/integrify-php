@@ -1,3 +1,7 @@
+---
+title: Kapital Bank · Enum-lar
+---
+
 # Enum-lar
 
 ## Endpoint

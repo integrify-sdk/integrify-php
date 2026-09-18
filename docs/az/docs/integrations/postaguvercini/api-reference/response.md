@@ -1,3 +1,7 @@
+---
+title: Posta Güvercini · Cavab DTO-ları
+---
+
 # Cavab DTO-ları
 
 Bu obyektlər servisdən **gəlir**. Enum-a bənzəyən field-lər sətir saxlanılır və enum ayrıca metodla verilir, ona görə servis yeni dəyər əlavə etdikdə cavab validasiyadan keçməkdə davam edir.

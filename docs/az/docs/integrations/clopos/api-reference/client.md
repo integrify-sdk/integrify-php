@@ -1,3 +1,7 @@
+---
+title: Clopos · Klient
+---
+
 # CloposClient
 
 Clopos Open API v2 — POS sistemi ilə inteqrasiya.

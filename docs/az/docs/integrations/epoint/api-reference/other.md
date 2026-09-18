@@ -1,3 +1,7 @@
+---
+title: EPoint · Digər obyektlər
+---
+
 # Digər obyektlər
 
 ## Callback

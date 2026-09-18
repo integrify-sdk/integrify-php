@@ -592,6 +592,44 @@ function clientSection(string $class): string
 }
 
 /**
+ * Paketin insan üçün oxunan adı — naviqasiyada və `<title>`-da görünən.
+ *
+ * Mənbə README-nin H1-idir (`# Integrify Kapital Bank (PHP)` -> `Kapital Bank`). Ayrıca
+ * ad siyahısı saxlamaq olardı, amma o siyahı README-dən asılı olmadan köhnələrdi: adı bir
+ * yerdə dəyişib o birini unutmaq mümkün olmasın deyə mənbə birdir. Şablon tutmasa,
+ * Composer adına qayıdırıq — sayt adsız qalmasın.
+ */
+function displayName(string $root, string $directory, string $fallback): string
+{
+    $readme = $root . '/packages/' . $directory . '/README.md';
+    $contents = is_file($readme) ? file_get_contents($readme) : false;
+
+    $pattern = '/^#\s+Integrify\s+(.+?)\s+\(PHP\)\s*$/m';
+
+    if (is_string($contents) && preg_match($pattern, $contents, $match) === 1) {
+        return trim($match[1]);
+    }
+
+    return $fallback;
+}
+
+/**
+ * Səhifənin `<title>`-ı — brauzer tabında, əlfəcində və Google nəticəsində görünən.
+ *
+ * Naviqasiyadakı yazı ilə eyni DEYİL və ola da bilməz: MkDocs-da `page.title` birdir, yəni
+ * nav-dakı qısa yazını uzatmadan tab başlığını dəyişmək olmur. Material-ın `htmltitle`
+ * bloku isə əvvəlcə `page.meta.title`-a baxır, ona görə front matter tam bu işi görür:
+ * yan paneldə "Konfiqurasiya", tabda "Azericard · Konfiqurasiya".
+ *
+ * Bunsuz yeddi paketin yeddi "Konfiqurasiya" səhifəsi eyni adla açılır və açıq tablardan
+ * hansının hansı olduğu bilinmir.
+ */
+function frontMatter(string $title): string
+{
+    return "---\ntitle: " . $title . "\n---\n\n";
+}
+
+/**
  * Bir neçə class-ı tək səhifəyə yığır.
  *
  * @param list<class-string> $classes
@@ -749,11 +787,10 @@ foreach ($packages as $package) {
 
     // Paketin giriş səhifəsi README-nin özüdür — `pymdownx.snippets` onu daxil edir,
     // yəni mətn iki yerdə saxlanılmır və köhnəlmir.
-    $files[$base . '/index.md'] = sprintf(
-        "---\ntitle: %s\n---\n\n--8<-- \"packages/%s/README.md\"\n",
-        $package['package'],
-        $directory,
-    );
+    $name = displayName($root, $directory, $package['package']);
+
+    $files[$base . '/index.md'] = frontMatter($name)
+        . sprintf("--8<-- \"packages/%s/README.md\"\n", $directory);
 
     // mkdocs naviqasiyası `docs_dir`-ə nisbətən yazılır, repo kökünə yox.
     $navBase = substr($base, strlen(DOCS_DIR) + 1);
@@ -766,11 +803,12 @@ foreach ($packages as $package) {
             continue;
         }
 
-        $files[$base . '/api-reference/' . $key . '.md'] = rewriteLinks($content, $pageOf, $key);
+        $files[$base . '/api-reference/' . $key . '.md'] = frontMatter($name . ' · ' . $title)
+            . rewriteLinks($content, $pageOf, $key);
         $children[] = sprintf('          - %s: %s/api-reference/%s.md', $title, $navBase, $key);
     }
 
-    $nav[] = '  - ' . $package['package'] . ':';
+    $nav[] = '  - ' . $name . ':';
     $nav[] = array_shift($children);
 
     if ($children !== []) {

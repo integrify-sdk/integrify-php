@@ -1,3 +1,7 @@
+---
+title: Azericard · Klient
+---
+
 # AzericardClient
 
 Azericard — kart ödənişləri (MPI) və pul köçürmələri (MT).

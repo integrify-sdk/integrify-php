@@ -1,3 +1,7 @@
+---
+title: Kapital Bank · Klient
+---
+
 # KapitalClient
 
 Kapital Bank e-commerce şlüzü.

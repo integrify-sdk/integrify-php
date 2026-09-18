@@ -1,3 +1,7 @@
+---
+title: LSIM · Klient
+---
+
 # BulkSmsClient
 
 Toplu SMS göndərilməsi (`https://www.sendsms.az`).

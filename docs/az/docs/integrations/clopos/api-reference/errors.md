@@ -1,3 +1,7 @@
+---
+title: Clopos · Xətalar
+---
+
 # Xətalar
 
 Hamısı `Integrify\Exception\IntegrifyException`-i implement edir.

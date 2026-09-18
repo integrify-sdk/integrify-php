@@ -1,3 +1,7 @@
+---
+title: Clopos · Sorğu DTO-ları
+---
+
 # Sorğu DTO-ları
 
 Bu obyektlər servisə **göndərilir**. `Məftildəki ad` sütunu payload-da hansı açarın görünəcəyini göstərir — PHP tərəfdəki ad heç vaxt məftilə çıxmır.
