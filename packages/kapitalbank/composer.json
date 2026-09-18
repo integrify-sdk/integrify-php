@@ -1,0 +1,53 @@
+{
+    "name": "integrify/kapitalbank",
+    "description": "Kapital Bank e-commerce şlüzü inteqrasiyası — sifariş, kart yaddaşı, clearing, geri qaytarma və saxlanılmış kartla ödəniş.",
+    "type": "library",
+    "keywords": [
+        "integrify",
+        "kapitalbank",
+        "payment",
+        "payment-gateway",
+        "api",
+        "integration",
+        "azerbaijan"
+    ],
+    "homepage": "https://integrify.mmzeynalli.dev",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "mmzeynalli",
+            "email": "miradil.zeynalli@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/integrify-sdk/integrify-php/issues",
+        "source": "https://github.com/integrify-sdk/integrify-php/tree/main/packages/kapitalbank",
+        "docs": "https://integrify.mmzeynalli.dev/integrations/kapitalbank"
+    },
+    "require": {
+        "php": ">=8.2",
+        "ext-json": "*",
+        "integrify/core": "^0.1"
+    },
+    "require-dev": {
+        "guzzlehttp/guzzle": "^7.9",
+        "nyholm/psr7": "^1.8",
+        "phpstan/phpstan": "^2.2",
+        "phpunit/phpunit": "^11.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Integrify\\Kapitalbank\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Integrify\\Kapitalbank\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

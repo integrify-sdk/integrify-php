@@ -41,13 +41,17 @@
         "psr-4": {
             "Integrify\\": "packages/core/src/",
             "Integrify\\EPoint\\": "packages/epoint/src/",
-            "Integrify\\Lsim\\": "packages/lsim/src/"
+            "Integrify\\Kapitalbank\\": "packages/kapitalbank/src/",
+            "Integrify\\Lsim\\": "packages/lsim/src/",
+            "Integrify\\PostaGuvercini\\": "packages/postaguvercini/src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
             "Integrify\\EPoint\\Tests\\": "packages/epoint/tests/",
+            "Integrify\\Kapitalbank\\Tests\\": "packages/kapitalbank/tests/",
             "Integrify\\Lsim\\Tests\\": "packages/lsim/tests/",
+            "Integrify\\PostaGuvercini\\Tests\\": "packages/postaguvercini/tests/",
             "Integrify\\Tests\\": "packages/core/tests/"
         }
     },

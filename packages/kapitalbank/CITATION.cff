@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+title: Integrify-Kapitalbank (PHP)
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Miradil
+    family-names: Zeynalli
+    email: miradil.zeynalli@gmail.com
+repository-code: 'https://github.com/integrify-sdk/integrify-php/tree/main/packages/kapitalbank'
+url: 'https://integrify.mmzeynalli.dev/'
+abstract: >-
+  Integrify is a request library that eases API integrations. This package wraps the
+  Kapital Bank e-commerce gateway — orders, saved cards, clearing, reversals and refunds.
+keywords:
+  - integrify
+  - integrify-kapitalbank
+  - kapitalbank
+  - payment
+  - php
+license: MIT
+version: 0.1.0
+date-released: '2026-09-17'

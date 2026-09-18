@@ -12,7 +12,8 @@ independently; this file records repository-wide changes.
 ### Added
 
 - Initial repository layout: a Composer monorepo with `integrify/core`,
-  `integrify/epoint` and `integrify/lsim`, PHPUnit +
+  `integrify/epoint`, `integrify/kapitalbank`, `integrify/lsim` and
+  `integrify/postaguvercini`, PHPUnit +
   PHPStan (`level: max`) + PHP-CS-Fixer tooling, and a GitHub Actions matrix over
   PHP 8.2 / 8.3 / 8.4.
 - Release-driven publishing (`.github/workflows/publish.yml`): publishing a GitHub
@@ -32,6 +33,16 @@ independently; this file records repository-wide changes.
   refunds and split payments, plus signed-callback decoding. All eleven request payloads
   were diffed field-for-field against the ones `integrify-epoint`'s pydantic models
   produce for the same arguments, and are identical.
+- `integrify/kapitalbank` — the Kapital Bank e-commerce gateway: orders, saved cards,
+  clearing, reversals, refunds and saved-card payments. All ten request payloads were
+  diffed field-for-field against `integrify-kapitalbank`'s pydantic models and are
+  identical. Unlike EPoint, this gateway reports failure with an HTTP status, so a
+  rejection raises `RequestRejected` carrying the bank's `errorCode`.
+- `integrify/postaguvercini` — the Posta Güvercini SMS service: one text to many
+  numbers, a different text per number, delivery status and credit balance. All five
+  request payloads were diffed field-for-field against the Python package's models and
+  are identical. Note that this service sends the account password in every request
+  body, so its request bodies must not be logged.
 - `bin/packages.php` — package discovery, and the single source of truth for the CI
   matrices, mirror names and the root autoload map. Adding an integration no longer means
   editing five files: create the directory and run `composer sync-packages`.
