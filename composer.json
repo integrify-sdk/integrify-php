@@ -40,6 +40,7 @@
     "autoload": {
         "psr-4": {
             "Integrify\\": "packages/core/src/",
+            "Integrify\\Azericard\\": "packages/azericard/src/",
             "Integrify\\EPoint\\": "packages/epoint/src/",
             "Integrify\\Kapitalbank\\": "packages/kapitalbank/src/",
             "Integrify\\Lsim\\": "packages/lsim/src/",
@@ -48,6 +49,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Integrify\\Azericard\\Tests\\": "packages/azericard/tests/",
             "Integrify\\EPoint\\Tests\\": "packages/epoint/tests/",
             "Integrify\\Kapitalbank\\Tests\\": "packages/kapitalbank/tests/",
             "Integrify\\Lsim\\Tests\\": "packages/lsim/tests/",

@@ -12,8 +12,8 @@ independently; this file records repository-wide changes.
 ### Added
 
 - Initial repository layout: a Composer monorepo with `integrify/core`,
-  `integrify/epoint`, `integrify/kapitalbank`, `integrify/lsim` and
-  `integrify/postaguvercini`, PHPUnit +
+  `integrify/azericard`, `integrify/epoint`, `integrify/kapitalbank`, `integrify/lsim`
+  and `integrify/postaguvercini`, PHPUnit +
   PHPStan (`level: max`) + PHP-CS-Fixer tooling, and a GitHub Actions matrix over
   PHP 8.2 / 8.3 / 8.4.
 - Release-driven publishing (`.github/workflows/publish.yml`): publishing a GitHub
@@ -43,6 +43,11 @@ independently; this file records repository-wide changes.
   request payloads were diffed field-for-field against the Python package's models and
   are identical. Note that this service sends the account password in every request
   body, so its request bodies must not be logged.
+- `integrify/azericard` — Azericard's card gateway (MPI) and money transfers (MT). All
+  seven request payloads, signatures included, were reproduced with the same key as the
+  Python package's models and match byte for byte. Five of its eight operations send no
+  HTTP request at all: they build a form for the browser to post. The RSA key and the
+  MD5 transfer key are separate settings here, because one file cannot be both.
 - `bin/packages.php` — package discovery, and the single source of truth for the CI
   matrices, mirror names and the root autoload map. Adding an integration no longer means
   editing five files: create the directory and run `composer sync-packages`.
