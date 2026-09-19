@@ -377,18 +377,50 @@ to publish either mistake.
 ### Publishing
 
 The site is on **Netlify** at <https://integrify-php.mmzeynalli.dev>, built from `main` by
-the root `netlify.toml`. That file sets `base = "docs/az"`, which is how the
-working-directory rule above is satisfied on the build machine; every other path in it is
-relative to that base, so `publish = "site"` means `docs/az/site`. Netlify installs
-`docs/az/requirements.txt` on its own. Every PR also gets its own deploy preview URL.
+the root `netlify.toml`. The build command is `php bin/build-docs.php`, not `mkdocs`
+directly, because the site is assembled from two kinds of source — and `publish` is
+`docs/site`, which only that script writes.
 
-`.github/workflows/docs.yml` does **not** publish anything. It runs `check-docs` and the
-same strict build, because a Netlify failure leaves the previous site up without marking
-the commit red, and because generated markdown is committed — nothing else would notice
-if someone edited a docblock and skipped `composer docs`.
+`.github/workflows/docs.yml` does **not** publish anything. It runs `check-docs` and
+`build-docs --public-only`, because a Netlify failure leaves the previous site up without
+marking the commit red, and because generated markdown is committed — nothing else would
+notice if someone edited a docblock and skipped `composer docs`.
 
 Changing the domain means changing `site_url` in `mkdocs.yml` as well; it feeds the
 canonical tags and `sitemap.xml`, which are wrong silently rather than loudly.
+
+### Private integrations
+
+`integrify/ecustoms` is not on Packagist and its repo is private, but its docs live on the
+public site under `/private/ecustoms/`, behind a password. `docs/private.json` is the
+registry; `bin/build-docs.php` fetches each entry, regenerates its API reference with
+`bin/docs.php --package=`, rebuilds it using **this** repo's theme and nav, and writes it
+under `docs/site/private/<name>/`. `netlify/edge-functions/private-docs.ts` gates every
+request to those paths against `DOCS_AUTH_<NAME>`.
+
+Four things about this are load-bearing and easy to break:
+
+- **The source is resolved in a fixed order** — `PRIVATE_DOCS_<NAME>_PATH`, then
+  `PRIVATE_DOCS_TOKEN`, then a sibling checkout, then skip. The sibling case is what makes
+  local development work with no token at all.
+- **Production must not publish without the private sections.** A missing token would
+  otherwise just skip them and ship a site nobody notices is incomplete, so
+  `PRIVATE_DOCS_REQUIRED=1` turns that into a failed deploy. Deploy previews (and fork
+  PRs, which get no token) deliberately skip instead.
+- **The leak check is not decoration.** It fails the build if private page URLs reach the
+  public sitemap or search index, if a private paragraph appears on exactly one public
+  page, or if the private namespace appears in public output. It distinguishes a leak from
+  shared boilerplate by counting pages: the generator writes the same intro on every
+  package's `config.md`, so text on *several* public pages is a template, and text on
+  exactly *one* is a leak.
+- **Never add a `[[headers]]` cache rule for `/private/*`.** The edge function sets
+  `Cache-Control: private, no-cache`; a public cache rule would let the CDN serve a private
+  page without the password.
+
+The config files are handled as **text**, not parsed YAML: the public nav already sits
+between `bin/docs.php`'s markers and the private nav is the last key in its file, so the
+two are spliced without a YAML dependency and without having to preserve
+`!!python/name:` tags.
 
 ## Onboarding
 

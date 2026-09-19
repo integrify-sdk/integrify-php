@@ -55,8 +55,5 @@ jobs:
       - name: Check the API reference is in sync
         run: composer run check-docs
 
-      # Netlify-ın qaçırdığı əmrin EYNİSİ, eyni işçi qovluqdan. Fərqlənsələr,
-      # bu yoxlamanın mənası qalmır.
       - name: Build
-        working-directory: docs/az
-        run: mkdocs build --strict
+        run: php bin/build-docs.php --public-only

@@ -1,0 +1,28 @@
+{
+    "_comment": [
+        "Məxfi inteqrasiyaların reyestri. `bin/build-docs.php` bunu oxuyur.",
+        "",
+        "Python tərəfdə bu fayl `docs/private.yml`-dir. Burada JSON-dur, çünki PHP-nin",
+        "standart kitabxanasında YAML parser yoxdur və bir kiçik reyestr üçün asılılıq",
+        "gətirmək istəmirik. Açarlar eynidir.",
+        "",
+        "Hər qeyd öz reposundan ayrıca sayt kimi qurulur və /private/<ad>/ altında",
+        "yayımlanır; netlify/edge-functions/private-docs.ts onu parol arxasına qoyur.",
+        "",
+        "  repo  — GitHub 'sahib/ad'",
+        "  ref   — branch, tag və ya commit SHA. Təkrarlanan build üçün tag yazın.",
+        "  label — ictimai naviqasiyada bölmənin adı",
+        "",
+        "Yenisini əlavə etmək üçün: bura qeyd yazın, PRIVATE_DOCS_TOKEN-ə həmin repoya",
+        "oxu icazəsi verin, və Netlify-da DOCS_AUTH_<AD> (parol) təyin edin. <AD> aşağıdakı",
+        "açardır: böyük hərflərlə, '-' əvəzinə '_'."
+    ],
+    "site_url": "https://integrify-php.mmzeynalli.dev/",
+    "private": {
+        "ecustoms": {
+            "repo": "integrify-sdk/integrify-ecustoms-php",
+            "ref": "main",
+            "label": "E-Customs (məxfi)"
+        }
+    }
+}

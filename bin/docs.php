@@ -21,18 +21,72 @@ declare(strict_types=1);
  *     php bin/docs.php            api referansını və mkdocs naviqasiyasını yazır
  *     php bin/docs.php --check    yazılmış fayllar mənbə ilə sinxrondurmu (CI)
  *
+ *     php bin/docs.php --package=../integrify-ecustoms-php [--check]
+ *                                 məxfi repo üçün yalnız `api-reference/` yazır
+ *
+ * `--package` rejimi `bin/build-docs.php` üçündür: məxfi inteqrasiya ayrı repodadır,
+ * `bin/packages.php` onu görmür, amma generator ona da lazımdır. Verilən yol yeni
+ * **yazı kökü** olur — çıxış yolları eyni qalır (`docs/az/docs/integrations/<ad>/`),
+ * sadəcə o repoda. Fərqlər:
+ *
+ *   - `index.md` yazılmır. Məxfi repoda o, əl ilə yazılıb (README snippet deyil).
+ *   - `mkdocs.yml` naviqasiyası toxunulmur: o repo öz nav-ını özü saxlayır, Python
+ *     tərəfdəki məxfi repo kimi.
+ *   - Köhnə fayl təmizliyi yalnız `api-reference/`-ə baxır, ona görə əl ilə yazılmış
+ *     səhifələr (`env.md`) "artıq" sayılıb silinmir.
+ *
+ * Autoload hər iki halda monoreponun paketlərini yükləyir: məxfi paketin DTO-ları
+ * `integrify/core`-dan miras alır, o olmadan refleksiya sinifləri aça bilmir.
+ *
  * Exit: 0 = qaydasındadır, 1 = fərq var (və ya yazıla bilmədi)
  */
 
 use Integrify\Dto\Attribute\Field;
 
-$root = dirname(__DIR__);
-$mode = $argv[1] ?? '--write';
+/** Bu skriptin öz reposu — paketlər və autoload həmişə buradan gəlir. */
+$home = dirname(__DIR__);
 
-if (!in_array($mode, ['--write', '--check'], true)) {
-    fwrite(STDERR, "Unknown option {$mode}. Use --write or --check.\n");
+$mode = '--write';
+$repo = null;
+
+// `$argv` yalnız `register_argc_argv` açıq olanda mövcuddur. CLI-da defolt açıqdır,
+// amma PHP bunu zəmanət vermir, ona görə dəyər `$_SERVER`-dən oxunur və tiplənir.
+$given = $_SERVER['argv'] ?? [];
+$arguments = [];
+
+foreach (is_array($given) ? array_slice($given, 1) : [] as $argument) {
+    if (is_string($argument)) {
+        $arguments[] = $argument;
+    }
+}
+
+foreach ($arguments as $argument) {
+    if ($argument === '--write' || $argument === '--check') {
+        $mode = $argument;
+
+        continue;
+    }
+
+    if (str_starts_with($argument, '--package=')) {
+        $value = substr($argument, strlen('--package='));
+        $resolved = realpath($value);
+
+        if ($resolved === false || !is_dir($resolved)) {
+            fwrite(STDERR, "No such directory: {$value}\n");
+            exit(1);
+        }
+
+        $repo = $resolved;
+
+        continue;
+    }
+
+    fwrite(STDERR, "Unknown option {$argument}. Use --write, --check or --package=<path>.\n");
     exit(1);
 }
+
+/** Sənədlərin yazıldığı repo — `--package` verilməyibsə, monorepo. */
+$root = $repo ?? $home;
 
 /** Sənədlərin yazıldığı yer — Python repolarındakı `docs/az/` ilə eyni forma. */
 const DOCS_DIR = 'docs/az/docs';
@@ -66,11 +120,11 @@ const SECTIONS = [
  * `packages/*` qovluqlarından qurulur. Beləliklə sənədləri `composer install`
  * etmədən də yenidən qurmaq olar.
  */
-function bootstrap(string $root): void
+function bootstrap(string $root, ?string $extra = null): void
 {
     $vendor = $root . '/vendor/autoload.php';
 
-    if (is_file($vendor)) {
+    if (is_file($vendor) && $extra === null) {
         require_once $vendor;
 
         return;
@@ -79,7 +133,17 @@ function bootstrap(string $root): void
     /** @var array<string, string> $prefixes */
     $prefixes = [];
 
-    foreach (glob($root . '/packages/*/composer.json') ?: [] as $file) {
+    $manifests = glob($root . '/packages/*/composer.json') ?: [];
+
+    // Məxfi paket monoreponun `packages/`-ində deyil, ona görə manifesti ayrıca gəlir.
+    // Öndə olmalıdır: onun prefiksi (`Integrify\ECustoms\`) core-un `Integrify\`
+    // prefiksindən uzundur və aşağıdakı sıralama onsuz da uzunu öncə qoyur, amma
+    // manifest siyahısında olmasa heç sıralanmır.
+    if ($extra !== null && is_file($extra . '/composer.json')) {
+        array_unshift($manifests, $extra . '/composer.json');
+    }
+
+    foreach ($manifests as $file) {
         $raw = file_get_contents($file);
 
         if ($raw === false) {
@@ -599,9 +663,9 @@ function clientSection(string $class): string
  * yerdə dəyişib o birini unutmaq mümkün olmasın deyə mənbə birdir. Şablon tutmasa,
  * Composer adına qayıdırıq — sayt adsız qalmasın.
  */
-function displayName(string $root, string $directory, string $fallback): string
+function displayName(string $home, string $fallback): string
 {
-    $readme = $root . '/packages/' . $directory . '/README.md';
+    $readme = $home . '/README.md';
     $contents = is_file($readme) ? file_get_contents($readme) : false;
 
     $pattern = '/^#\s+Integrify\s+(.+?)\s+\(PHP\)\s*$/m';
@@ -659,17 +723,39 @@ function page(string $title, string $intro, array $classes, callable $render): ?
 //  İcra                                                                                        //
 // ------------------------------------------------------------------------------------------- //
 
-bootstrap($root);
+bootstrap($home, $repo);
 
-$json = shell_exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($root . '/bin/packages.php') . ' --json');
+if ($repo !== null) {
+    $raw = file_get_contents($repo . '/composer.json');
 
-if (!is_string($json)) {
-    fwrite(STDERR, "cannot run bin/packages.php --json\n");
-    exit(1);
+    if (!is_string($raw)) {
+        fwrite(STDERR, "cannot read {$repo}/composer.json\n");
+        exit(1);
+    }
+
+    /** @var array<string, mixed> $manifest */
+    $manifest = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+    $name = is_string($manifest['name'] ?? null) ? $manifest['name'] : basename($repo);
+
+    // Qovluq adı paketin adından gəlir (`integrify/ecustoms` -> `ecustoms`), repo
+    // qovluğunun adından yox: repo `integrify-ecustoms-php` adlana bilər, sayt yolu
+    // isə ictimai paketlərlə eyni formada qalmalıdır.
+    $packages = [[
+        'directory' => str_contains($name, '/') ? substr($name, strpos($name, '/') + 1) : $name,
+        'package' => $name,
+        'mirror' => '',
+    ]];
+} else {
+    $json = shell_exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($home . '/bin/packages.php') . ' --json');
+
+    if (!is_string($json)) {
+        fwrite(STDERR, "cannot run bin/packages.php --json\n");
+        exit(1);
+    }
+
+    /** @var list<array{directory: string, package: string, mirror: string}> $packages */
+    $packages = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
 }
-
-/** @var list<array{directory: string, package: string, mirror: string}> $packages */
-$packages = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
 
 /** @var array<string, string> $files yol => məzmun */
 $files = [];
@@ -678,14 +764,17 @@ $nav = [];
 
 foreach ($packages as $package) {
     $directory = $package['directory'];
-    $src = $root . '/packages/' . $directory . '/src';
+
+    // Məxfi repoda paket repo kökündədir, monorepoda `packages/<ad>/` altında.
+    $home_of_package = $repo ?? $root . '/packages/' . $directory;
+    $src = $home_of_package . '/src';
 
     if (!is_dir($src)) {
         continue;
     }
 
     // PSR-4 prefiksi paketin öz manifestindən gəlir — ad qaydası burada təkrarlanmır.
-    $raw = file_get_contents($root . '/packages/' . $directory . '/composer.json');
+    $raw = file_get_contents($home_of_package . '/composer.json');
     /** @var array<string, mixed> $manifest */
     $manifest = is_string($raw) ? json_decode($raw, true) : [];
     /** @var array<string, mixed> $autoload */
@@ -787,10 +876,14 @@ foreach ($packages as $package) {
 
     // Paketin giriş səhifəsi README-nin özüdür — `pymdownx.snippets` onu daxil edir,
     // yəni mətn iki yerdə saxlanılmır və köhnəlmir.
-    $name = displayName($root, $directory, $package['package']);
+    $name = displayName($home_of_package, $package['package']);
 
-    $files[$base . '/index.md'] = frontMatter($name)
-        . sprintf("--8<-- \"packages/%s/README.md\"\n", $directory);
+    // Məxfi repoda giriş səhifəsi əl ilə yazılıb (Python tərəfdəki kimi: `index.md`
+    // + `env.md`), ona görə ona toxunmuruq. İctimai paketlərdə isə o, README-nin özüdür.
+    if ($repo === null) {
+        $files[$base . '/index.md'] = frontMatter($name)
+            . sprintf("--8<-- \"packages/%s/README.md\"\n", $directory);
+    }
 
     // mkdocs naviqasiyası `docs_dir`-ə nisbətən yazılır, repo kökünə yox.
     $navBase = substr($base, strlen(DOCS_DIR) + 1);
@@ -817,36 +910,47 @@ foreach ($packages as $package) {
     }
 }
 
-// Yazılan bütün fayllar `docs/` köküne nisbətəndir; nav-da da elə görünür.
-$navBlock = implode("\n", [
-    NAV_BEGIN,
-    'nav:',
-    '  - Ana səhifə: index.md',
-    ...$nav,
-    NAV_END,
-]);
+// Məxfi repoda nav əl ilə saxlanılır (orada `index.md` və `env.md` da var, onları
+// generator görmür), ona görə yalnız monorepoda yazılır.
+if ($repo === null) {
+    // Yazılan bütün fayllar `docs/` köküne nisbətəndir; nav-da da elə görünür.
+    $navBlock = implode("\n", [
+        NAV_BEGIN,
+        'nav:',
+        '  - Ana səhifə: index.md',
+        ...$nav,
+        NAV_END,
+    ]);
 
-$mkdocs = file_get_contents($root . '/' . MKDOCS_FILE);
+    $mkdocs = file_get_contents($root . '/' . MKDOCS_FILE);
 
-if (!is_string($mkdocs)) {
-    fwrite(STDERR, 'cannot read ' . MKDOCS_FILE . "\n");
-    exit(1);
+    if (!is_string($mkdocs)) {
+        fwrite(STDERR, 'cannot read ' . MKDOCS_FILE . "\n");
+        exit(1);
+    }
+
+    $pattern = '/' . preg_quote(NAV_BEGIN, '/') . '.*?' . preg_quote(NAV_END, '/') . '/s';
+
+    if (preg_match($pattern, $mkdocs) !== 1) {
+        fwrite(STDERR, MKDOCS_FILE . ' has no "' . NAV_BEGIN . '" … "' . NAV_END . "\" block.\n");
+        exit(1);
+    }
+
+    $files[MKDOCS_FILE] = preg_replace($pattern, $navBlock, $mkdocs) ?? $mkdocs;
 }
-
-$pattern = '/' . preg_quote(NAV_BEGIN, '/') . '.*?' . preg_quote(NAV_END, '/') . '/s';
-
-if (preg_match($pattern, $mkdocs) !== 1) {
-    fwrite(STDERR, MKDOCS_FILE . ' has no "' . NAV_BEGIN . '" … "' . NAV_END . "\" block.\n");
-    exit(1);
-}
-
-$files[MKDOCS_FILE] = preg_replace($pattern, $navBlock, $mkdocs) ?? $mkdocs;
 
 // `docs/` altındakı köhnə generasiya olunmuş fayllar da silinməlidir — paket adı
 // dəyişəndə arxada qalan səhifə naviqasiyada görünməsə də saytda qalırdı.
+//
+// Məxfi repoda `index.md` generasiya olunmur, ona görə süpürgə yalnız
+// `api-reference/`-ə baxır: əks halda əl ilə yazılmış səhifələr "artıq" sayılardı.
+$sweep = $repo === null
+    ? '/integrations/*/{index.md,api-reference/*.md}'
+    : '/integrations/*/api-reference/*.md';
+
 $stale = [];
 
-foreach (glob($root . '/' . DOCS_DIR . '/integrations/*/{index.md,api-reference/*.md}', GLOB_BRACE) ?: [] as $path) {
+foreach (glob($root . '/' . DOCS_DIR . $sweep, GLOB_BRACE) ?: [] as $path) {
     $relative = substr($path, strlen($root) + 1);
 
     if (!isset($files[$relative])) {

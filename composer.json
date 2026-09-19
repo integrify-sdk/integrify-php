@@ -73,6 +73,7 @@
         "check-packages": "@php bin/packages.php --check",
         "docs": "php bin/docs.php",
         "check-docs": "php bin/docs.php --check",
+        "build-docs": "php bin/build-docs.php",
         "secure": "composer audit",
         "all": [
             "@check-packages",

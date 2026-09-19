@@ -24,3 +24,5 @@ swagger.json
 
 # Docs
 /docs/az/site/
+/docs/site/
+/.private/

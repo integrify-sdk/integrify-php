@@ -1,10 +1,15 @@
 [build]
-base = "docs/az"
-publish = "site"
-command = "mkdocs build --strict"
+publish = "docs/site"
+command = "pip install -r docs/az/requirements.txt && php bin/build-docs.php"
 
 [build.environment]
+
 PYTHON_VERSION = "3.12"
+
+PHP_VERSION = "8.3"
+
+[context.production.environment]
+PRIVATE_DOCS_REQUIRED = "1"
 
 [[headers]]
 for = "/assets/javascripts/*"
